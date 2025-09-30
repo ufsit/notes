@@ -26,3 +26,4 @@
 ```tail -f /var/syslog``` = ```Get-Content -Path C:\Windows\System32\winevt\Logs\System.evtx -Wait``` moniter live logs  
 ```alias``` = ```Get-Alias```  ```Set-Alias alias cmd``` ```Remove-Item Alias:alias```
 ```grep``` = ```findstr```
+```touch``` = ```New-Item```  
