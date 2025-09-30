@@ -1,4 +1,4 @@
-# Command cheat sheet
+# Linux to Windows cheat sheet
 ```grep pattern file``` = ```Select-String -Pattern pattern file``` search in files  
 ```find /path -name "*.txt"``` = ```Get-Children -Path /path -Recurse -Filter *.txt -ErrorAction SilentlyContinue``` find files (ex .txt files)  
 ```ps``` and ```top``` = ```Get-Process```  
