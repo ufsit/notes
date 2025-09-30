@@ -1,0 +1,2 @@
+# Playbooks
+A playbook is a predefined set of steps for handling security incidents. These playbooks are meant to be modular so that each competition role can mix and match them as they see fit. We aim to develop playbooks for Linux, Windows, BSD, services, logging infrastructure, and more.

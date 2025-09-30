@@ -1,0 +1,37 @@
+#!/bin/bash
+if [ "$(id -u)" != "0" ]; then
+    echo "You must be root to run this script."
+    exit 1
+fi
+
+
+# Check for LD_PRELOAD rootkits
+
+## In file:
+
+device=$(fdisk -l | grep 'Linux filesystem' | awk '{print $1}')
+#debugfs_commands_file=$(mktemp)
+TF=$(mktemp)
+
+echo "cat /etc/ld.so.preload" > "$TF"
+
+res=$(debugfs -f "$TF" "$device")
+
+if [[ $res =~ "not found" ]]; then
+    echo "Nothing found in /etc/ld.so.preload"
+else
+    echo "Potentially malicious library (rootkit??) found in /etc/ld.so.preload"
+    echo "$res"
+    echo "Remove the malicious library and then remove ld.so.preload with debugs $device to fix"
+fi
+
+## In environment variable
+
+if [[ -v $LD_PRELOAD ]]; then
+    echo "LD_PRELOAD environment variable is set"
+    echo "remove with unset LD_PRELOAD"
+    echo "figure out where it is being set. maybe .bashrc or .profile?"
+fi
+
+
+echo "Now run 'rkhunter --check'. This is low-accuracy"
