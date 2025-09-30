@@ -1,7 +1,7 @@
 # Command cheat sheet
-```grep pattern file``` = ```Select-String -Pattern patter file``` search in files  
+```grep pattern file``` = ```Select-String -Pattern pattern file``` search in files  
 ```find /path -name "*.txt"``` = ```Get-Children -Path /path -Recurse -Filter *.txt -ErrorAction SilentlyContinue``` find files (ex .txt files)  
-```ps``` and ```top``` = Get-Process  
+```ps``` and ```top``` = ```Get-Process```  
 ```kill PID``` = ```Stop-Process -Id PID -Force```  
 ```df -h``` =  ```Get-PSDrive``` disk usage  
 ```free -h``` = ```Get-CimInstance Win32_OperatingSystem``` tot visable mem  
