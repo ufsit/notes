@@ -23,13 +23,35 @@ It's important to differentiate what a protocol does versus what an implementati
 ### How does this relate to SSH?
 It relates because SSH itself is the protocol, not an actual program. As a result, there exists many implementations of SSH and each slightly vary on how they follow the SSH protocol itself. A popular implementation of SSH is called OpenSSH. 
 
-# Creating an OpenSSH server
-1. on your terminal, run `sudo apt install openssh-server` if it is not installed already.
-2. to modify the config of your SSH server, you can go to this dir: 
-`/etc/ssh/sshd_config` and using your favorite text editor, you can modify these values to until your heart's content. 
-3. To know what actual permissions/configurations you can change on that `sshd_config` file, you should run `man sshd_config.` It will explain the format and each configuration in detail.
-4. Generally the main modifications you will make on `sshd_config` will be anything with Authentication in the naming since that is how the OpenSSH server will handle any legit or malicious user trying to enter that port. Another one would be anything with X11 before it, since it references your display system and if any GUI is allowed, it can allow for hackers to find easier exploits to bypass the OpenSSH authentication. Lastly, another one you should always check is PermitRootLogin, since this could allow whether the root user is allowed to remotely log in via SSH. Any option besides `yes` is advised.
+# OpenSSH
+## Install
+* `sudo apt install openssh-server` 
 
+## Service Management
+* `sytemctl status|start|stop|restart ssh` - Ubuntu/Debian
+* `sytemctl status|start|stop|restart sshd` - RHEL & friends
+
+## Usage
+* `ssh <user>@<host_ip_address>`
+  * `-P <port>` if ssh is running in an unusual port
+* you can also append a command at the end of the ssh connection to send a command before opening a shell
+  * `ssh <user>@<host_ip_address> <command>`
+
+
+## Configs
+* `/etc/ssh/*` - config directory
+* SSH server configs `/etc/ssh/sshd_config`
+  *  and using your favorite text editor, you can modify these values to until your heart's content. 
+  * To know what actual permissions/configurations you can change on that `sshd_config` file, you should run `man sshd_config.` It will explain the format and each configuration in detail.
+* SSH server configs - `sshd_config` 
+  * anything with Authentication in the naming since that is how the OpenSSH server will handle any legit or malicious user trying to enter that port.
+* SSH client configs - `ssh_config`
+
+
+### Sensitive settings
+* `PermitRootLogin`, since this could allow whether the root user is allowed to remotely log in via SSH. Any option besides `yes` is advised.
+* Another one would be anything with X11 before it, since it references your display system and if any GUI is allowed, it can allow for hackers to find easier exploits to bypass the OpenSSH authentication. 
+* An additional step would be not use passwords and use public/private keys, but this typically an unusable config in competition (scored users will be using their passwords)<br><br>
 
 ## Why should I care about OpenSSH?
 
@@ -37,11 +59,34 @@ Any OpenSSH server running on an open port will be what is considered an attack 
 
 // w.i.p
 
-# Sensitive settings
-* SSH is already a very secure protocol, it really earns the S in SSH. 
-* Typicaly hardening/settings to watch our for is the `PermitRootLogin no` setting in `/etc/ssh/sshd_config`.
-* An additional step would be not use passwords and use public/private keys, but this has never been used in competition <br><br>
+
+
+## Keys
+* `ssh-keygen -t <key_type>`
+  * you can specify a key type: `-t <ecdsa|rsa|ed25519|...>`; 
+    * `ed25519` is shorter and provides much better security than `rsa`
+  * you can leave the passphrase empty
+  * this will generate a private key and a public key; both have the same name, the public key has a `.pub` extension
+* `ssh-copy-id -i <path/to/public_key> <remote_user>@<remote_ip>`
+  * this will copy the contents of the public key onto the target's `authorized_keys` file
+* if successful, you can run `ssh -i <private_key> <remote_user>@<remote_ip>` without entering a password
+
+### Key permissions
+* these are handled automatically through ssh-keygen; this section is for reference in case the above had issues, or you have other problems
+* public keys require `644` permissions, user and group owernship should match the user (`bob:bob`)
+* private keys require `600` permissions, user and group owernship should match the user (`bob:bob`)
+* `.ssh` directory should have `700` permissions, user and group owernship should match the user (`bob:bob`)
+
+### Keys-Only
+You can setup SSH to only accept ssh-keys, effecitvely removing password authentication (in a good-ish way, you can easily shoot yourself in the foot if you're not careful)
+Check `sudo vi /etc/ssh/sshd_config.d/disable_root_login.conf`
+- ChallengeResponseAuthentication no
+- PasswordAuthentication no
+- UsePAM no
+- PermitRootLogin no
+
 
 # SCP 
 * Secure Copy (SCP) uses an SSH tunnel to securely transfer a file from one host to another
 * `scp [SOURCE_FILE(S)] [REMOTE_USER]@[REMOTE_IP_ADDRESS]:[DESTINATION_ADDRESS]`
+  * insert `-i <private_key>` if necessary

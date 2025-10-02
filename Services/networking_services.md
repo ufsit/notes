@@ -14,6 +14,7 @@
 ## networking
 * Check if you are running this service: `systemctl status networking`
 * Config File: `/etc/network/interfaces`
+* For a static address
 ```
 auto eth0
 iface eth0 inet static        # static/dhcp
@@ -23,9 +24,15 @@ iface eth0 inet static        # static/dhcp
     dns-domain <DNS-DOMAIN>
     dns-nameservers <IP_ADDRESS> <IP_ADDRESS> <IP_ADDRESS>
 ```
+* For a dynamic address
+```
+auto eth0
+iface eth0 dhcp
+```
 * `sudo systemctl restart networking`
 * if the `resolvconf` package is installed, **_DO NOT_** edit `resolv.conf` directly and set the nameserver as below
 * Typical in older Debian
+
 ## netplan
 * To check if you are running this service: check if `/etc/netplan` exists
 * Config Files: `/etc/netplan/*`
@@ -54,12 +61,21 @@ network:
 * Check if you are running this service: `systemctl status network`
 * `/etc/sysconfig/network-scripts/`
 * Edit/create a file with the following scheme: `ifcfg-<interface>` where the interface matches an interface from `ip a`
-* Add/Edit the following as needed:
+* Add/Edit the following as needed: (for a static address)
 ```
+TYPE=Ethernet
 BOOTPROTO=static
 ONBOOT=yes
 IPADDR=<IP_ADDRESS>
 NETMASK=<NETMASK>
+ZONE=<FIREWALLD_ZONE_NAME>   # optional, when firewalld is enabled
+GATEWAY=<IP_ADDRESS>        # if needed
+```
+* Add/Edit the following as needed: (for a static address) <!-- TODO: fact check the following-->
+```
+TYPE=Ethernet
+BOOTPROTO=dhcp
+ONBOOT=yes
 ZONE=<FIREWALL_ZONE_NAME>   # optional
 GATEWAY=<IP_ADDRESS>        # if needed
 ```
@@ -90,6 +106,7 @@ nmcli con down <INTERFACE> && nmcli con up <INTERFACE>
 * `systemctl reload systemd-networkd`
 
 * used by Arch
+
 ## miscellaneous
 * `sudo ip addr add [IP_ADDRESS]/[CIDR] dev [INTERFACE]`
   * this will add a new static IP address to an interface _temporarily_; will not persist after a reboot

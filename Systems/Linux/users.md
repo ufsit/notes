@@ -10,6 +10,7 @@
 - [Permissions](#permissions)
   - [File Permissions](#file-permissions)
     - [SUID + GUID bit](#suid--guid-bit)
+  - [File Attributes](#file-attributes)
   - [ACLs (Access Control Lists)](#acls-access-control-lists)
   - [Capabilities](#capabilities)
   - [Mandatory Access Control](#mandatory-access-control)
@@ -20,6 +21,7 @@
   - [`/etc/passwd`](#etcpasswd)
   - [`/etc/shadow`](#etcshadow)
     - [Format:](#format)
+    - [Hash Types](#hash-types)
   - [`/etc/group`](#etcgroup)
   - [`/etc/gshadow`](#etcgshadow)
   - [`/etc/sudoers`](#etcsudoers)
@@ -30,7 +32,7 @@
 
 # Users and Groups
 ## Users
-* `adduser [USER]`
+* `adduser [USER]` - preferred way to add a user
   * non-standard command, it uses `useradd` in the background; or it may just be symlinked to `useradd` too
   * automatically creates a home directory; asks for a new password
   * asks for Full Name, Room Number, Phone Numbers
@@ -41,7 +43,7 @@
   * built-in, very low-definition
   * Quirks for the default behavior:
     * the entry created in `/etc/passwd` does contain the `x`, but since this command did not set a password, we would not be able to enter the new user account. Also, 
-    * the entry does contain `/home/test` for the new user, even though this address does not exist either. Even if we set a password with passwd for the *test* user, we would still be unable to create the home directory
+    * the entry does contain `/home/<user>` for the new user, even though this address does not exist either. Even if we set a password with passwd for the *test* user, we would still be unable to create the home directory
     * the default login shell is `sh`, not `bash`
   * Can be fixed by modifying `/etc/login.defs`
 * `userdel [USER]`
@@ -55,6 +57,9 @@
   * `-G [GROUP]`: the name of the group we want to add
   * `sudo gpasswd -d username groupname`
 
+**Example**
+* `sudo usermod -aG sudo` - add the `sudo` group to the list of `bob`'s groups
+
 ### User name change
   * `--login|-l [NEW_LOGIN]`: new value of the login name
   * `sudo usermod -l [NEW_USERNAME] [OLD_USERNAME]`
@@ -66,7 +71,7 @@
   * `groups [USER]` to show groups of a specific user
 * `id`
   * get the groups and their id's; shows `gid` of a user
-* `/etc/group`
+* `/etc/group` - contains list of groups, GID's, and member accounts
   * `[GROUP]:x:[GID]:[MEMBER_USERS]`
 * `chown [USER]:[GROUP] [FILE]`
 
@@ -74,11 +79,31 @@
 Security is built around the principle of least privileges... this is how the OS maintains that.
 
 ## File Permissions
-
 [This blog](https://tbhaxor.com/linux-file-permissions/) explains Linux file permissions really well. Running `ls -l` will display those permissions.
 
-### SUID + GUID bit
+- This `ls` option will list the permissions of a file. Should normally pair this with the `-a` option to show hidden files as well (files with a . at the start of their name)
 
+Example of an `ls -la` entry that I ran in my home directory:
+```
+-rwxr-xr-x  br br    126 KB Wed Dec 15 10:28:22 2021 my_sick_program.o*
+```
+
+* Note the first 10 characters of this command (`.rwxr-xr-x`)
+* The first `-` indicates that this listing is _not_ a directory (it would show `d` otherwise)
+* The next three characters (`rwx`) indicate that it is readable, writeable, and executable by the file owner -- `br` (my user)
+* The three characters after (`r-x`) indicate that it is readable, _not_ writeable, and executable by the group associated with the file
+* The last three characters (`r-x`) indicate the same thing as before, but these apply to "everyone else" (that is not the owner or group for the file)
+
+* You can modify permissions with `chmod`; for the following examples, suppose the permissions for a file are the following `---------`
+  * `chmod +x <file>` results in `-x--x--x-`
+  * `chmod u+x file` results in `-x-------`
+    * similary, change the `u` to `a` (for other users) or `g` (for group perms)
+* you can modify permissions numerically as well
+  * r = 4, w = 2, x = 1
+  * `chmod 644 file` results in `rw-r--r--`
+  * `chmod 777 file` results in `rwxrwxrwx`
+
+### SUID + GUID bit
 There is a secret 4th bit that modifies the `x` bit. Depending on which group it's in, it means something different:
 - user --> **s** = SUID. The binary is always executed with the privileges of the owner. 
 - group --> **s** = GUID. The binary is executed with the privileges of the owner group.
@@ -87,20 +112,24 @@ There is a secret 4th bit that modifies the `x` bit. Depending on which group it
 
 For files with the sticky bit, check [GTFOBins](https://gtfobins.github.io/) if it is exploitable ([LOLBAS](https://lolbas-project.github.io/#) is the Windows equivalent). To understand this bit better, you can read more [here](https://tbhaxor.com/demystifying-suid-and-sgid-bits/).
 
-## ACLs (Access Control Lists)
+## File Attributes
+* extended attributes (metadata) describing how files behave (similar to permissions in a way)
+* `lsattr` - list attributes
+* `chattr` - change attributes
+  * more common one we've used is `chattr +i <file>`: make a file immutable, not even root can delete it
+  * remove this attribute with `chattr -i <file>`
+* [Read more here](https://wiki.archlinux.org/title/File_permissions_and_attributes#File_attributes)
 
+## ACLs (Access Control Lists)
 **Access control lists** (acls) are an *additional* set of *user-specific* permissions that you can assign to files. These don't appear normally in `ls -l` (you may see a `+`), so instead use `getfacl`.
 
 ## Capabilities
-
 Capabilities are another set of permissions you assign to *processes*. Root can do a LOT of things, so to follow the principle of least privilege, Linux has grouped root's privileges into **capabilties**. This can be confusing, so here is a [detailed guide](https://github.com/huntergregal/mimipenguin/tree/master) and [practical overview](https://github.com/huntergregal/mimipenguin/tree/master).
 
 ## Mandatory Access Control
-
 There's a bunch of theory and models on the different types of access control, which you can learn about [here](https://pwn.college/intro-to-cybersecurity/access-control/).
 
 ## PAM
-
 Pluggable (more like *Painful*) Authentication Modules are a source of plenty of confusion and many backdoors. Essentially, whenever any authentication happens in Linux, PAM is what handles it. If you want to learn it thoroughly, [this guide](https://www.chiark.greenend.org.uk/doc/libpam-doc/html/Linux-PAM_SAG.html) and [video](https://www.youtube.com/watch?v=eHGzzCtJg0A) are GREAT! I will provide a *brief* summary.
 
 PAM handles authentication in Linux and consists of config files in `/etc/pam.d`, which reference so files in `/lib/x86_64-linux-gnu/security/`. If you want to find the standard config for your distroy, you can look at its [CIS benchmark](https://www.cisecurity.org/cis-benchmarks). The most relevant config files are (with examples):
@@ -228,6 +257,10 @@ This file stores the password hashes. Read [this blog](https://tbhaxor.com/linux
   * `EXPIRATION_DATE` - date when the account was disabled, epoch date. 
   * `UNUSED` - field is ignored, reserved for future use
 
+### Hash Types
+* `$1$` means an MD5 hash; very insecure
+* `$6$` means a SHA-512 is being used
+* `$y$` means a yescrypt, very good
 
 ## `/etc/group`
 
@@ -244,6 +277,28 @@ This file contains the passwds for groups. This allows users to add themselves t
 ## `/etc/sudoers`
 
 Sudo is a command that allows certain users to execute as root. You need to check `/etc/sudoers` and all files in `/etc/sudoers.d/` to ensure there are no misconfigurations. Read [this blog](https://tbhaxor.com/understand-sudo-in-linux/#understand-sudoers-file-format) to understand how it's formatted.
+
+Edit this file through `visudo`. Don't edit directly through a privileged text editor, you might break/brick or you system. `visudo` is meant to be the safe way to edit the file.
+
+Example:
+* `%admin ALL=(ALL) NOPASSWD: ALL`
+  * `group|user hosts=(<runas_user>:<target_group>) tag_list: <list_target_commands>`
+  * users in the admin group may run any command as any user without a password
+
+Available tag_list values are:
+|Tag|Meaning|
+|:-|:-|
+|**NOPASSWD**|The user **won’t be prompted** for their password before running the command.|
+|**PASSWD**|The user **will be prompted** for their password before running the command (overrides `NOPASSWD`).|
+|**NOEXEC**|Prevents the command from executing further commands (via exec). Useful for security (e.g., `vi`, `less`).|
+|**EXEC**|Overrides `NOEXEC`; allows the command to run other programs.|
+|**SETENV**|Allows the command to **run with user-specified environment variables** (e.g., with `sudo -E`).|
+|**NOSETENV**|Prevents the use of `SETENV` (the default if unspecified).|
+|**LOG_INPUT**|Enables **logging of all input** provided to the command.|
+|**NOLOG_INPUT**|Disables input logging.|
+|**LOG_OUTPUT**|Enables **logging of all output** of the command.|
+|**NOLOG_OUTPUT**|Disables output logging.|
+
 
 ## `.bashrc` + `.bash_profile`
 

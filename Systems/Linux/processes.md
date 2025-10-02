@@ -8,6 +8,9 @@
 - [Monitoring processes](#monitoring-processes)
   - [ps](#ps)
     - [Example](#example)
+  - [top/htop/btop](#tophtopbtop)
+- [Managing Processes](#managing-processes)
+    - [Killing a process](#killing-a-process)
 
 # Hijacking processes
 
@@ -43,4 +46,19 @@ If a priviledged program creates a file `filename` in a directory writable by th
 * `ps auxf`
 * `ps -eo euser,pid,cmd --forest | less`
 * `ps -efwH`
+
+## top/htop/btop
+* monitor process in real-time
+* top is oldest, htop looks the same but with colors and a TUI, btop the goat
+
+# Managing Processes
+### Killing a process
+* the `kill` command is a utility for sending process signals to processes
+  * `kill -9` sends the `SIGKILL` signals to a process
+  * `kill -9 <pid>` to kill a process
+* the `pkill` command can kill commands based on complex patterns
+  * i.e. `sudo pkill -9 <name_of_a_process>`
+  * i.e. `sudo pkill -9 -u <user>` - kill all processes from that user
+
+
 

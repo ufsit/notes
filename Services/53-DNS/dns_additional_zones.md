@@ -11,7 +11,7 @@
   - Should return: ```Name:   <subdomain.domain>
                       Address: <scoreboard ip address>```
 ## Reverse Lookups
-1. (still in `/etc/bind` run `sudo nano named.conf.default-zones`
+1. still in `/etc/bind` run `sudo nano named.conf.default-zones`
 2. New Entry:
 ```
 zone <IP address (e.g. "20.172 in-addr.arpa") IN {

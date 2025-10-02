@@ -8,15 +8,22 @@
   * `sudo passwd -l <username>` - lock out an account (passwd may be backdoored, be careful)
   * *script - coming soon*
 
+# Networking
+* static IPs
+* configure default gateway
+* configure DNS
+* Include appropriate section from [networking service](../Services/networking.md) playbook
+
 # Firewall
 * Include appropriate [firewall playbook](./firewall.md) for your distro
 
 # Cronjobs
 * `/etc/crontab`
 * `/etc/cron.d/*`
-* `/etc/cron.{hourly.daily,weekly,monthly}/*`
+* `/etc/cron.*`
+* `/etc/cron.{d,hourly,daily,weekly,monthly}/*`
 * `/var/spool/cron/*`
-* `/var/spool/cron/crontabs/*`
+* `/var/spool/cron/crontabs/*` - user cronjobs
 * `/var/spool/anacron/*`
 * Delete if appropriate
 * if possible, stop cron service: `cron|crond|cronie`
