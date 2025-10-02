@@ -8,6 +8,7 @@
 * Allow only select users through SSH
   * `AllowUsers <user1> <user2>` - if this line is created, SSH interprets this list as a whitelist
   * OPTIONAL: `AllowUsers <user1>@192.168.1.*`; this behavior should be set in firewall
+* `MaxSessions 5` - limit active connections, reduce session hijacking risk, conserve resources
 <br><br>
 
 * write firewall rules
