@@ -1,24 +1,76 @@
 # Table of Contents
 
+- [Table of Contents](#table-of-contents)
+- [Users and Groups](#users-and-groups)
+  - [Users](#users)
+    - [User group modifications](#user-group-modifications)
+    - [User name change](#user-name-change)
+    - [User shell change](#user-shell-change)
+  - [Groups](#groups)
 - [Permissions](#permissions)
-   - [File Permissions](#file-permissions)
-   - [SUID + GUID bit](#suid--guid-bit)
-   - [ACLs](#acls-access-control-lists)
-   - [Capabilities](#capabilities)
-   - [PAM](#pam)
+  - [File Permissions](#file-permissions)
+    - [SUID + GUID bit](#suid--guid-bit)
+  - [ACLs (Access Control Lists)](#acls-access-control-lists)
+  - [Capabilities](#capabilities)
+  - [Mandatory Access Control](#mandatory-access-control)
+  - [PAM](#pam)
+- [If succeeds, skip next line (so jumps to permit). The yescrypt is secure hashing algorithm](#if-succeeds-skip-next-line-so-jumps-to-permit-the-yescrypt-is-secure-hashing-algorithm)
+    - [:red\_circle: Red team :red\_circle:](#red_circle-red-team-red_circle)
 - [Important Files](#important-files)
-   - [/etc/passwd](#etcpasswd)
-   - [/etc/shadow](#etcshadow)
-   - [/etc/group](#etcgroup)
-   - [/etc/gshadow](#etcgshadow)
-   - [/etc/sudoers](#etcsudoers)
-   - [.bashrc+ .bash_profile](#bashrc--bash_profile)
+  - [`/etc/passwd`](#etcpasswd)
+  - [`/etc/shadow`](#etcshadow)
+    - [Format:](#format)
+  - [`/etc/group`](#etcgroup)
+  - [`/etc/gshadow`](#etcgshadow)
+  - [`/etc/sudoers`](#etcsudoers)
+  - [`.bashrc` + `.bash_profile`](#bashrc--bash_profile)
 - [List of users](#list-of-users)
-   - [Required users](#required-users)
-   - [Optional Users](#optional-users)
+  - [Required Users](#required-users)
+  - [Optional Users](#optional-users)
+
+# Users and Groups
+## Users
+* `adduser [USER]`
+  * non-standard command, it uses `useradd` in the background; or it may just be symlinked to `useradd` too
+  * automatically creates a home directory; asks for a new password
+  * asks for Full Name, Room Number, Phone Numbers
+  * leaves home directory blank
+  * has well-documented options for modifying its default behavior, which is very useful
+  * Debian man pages recommend using `adduser` over `useradd`
+* `useradd`
+  * built-in, very low-definition
+  * Quirks for the default behavior:
+    * the entry created in `/etc/passwd` does contain the `x`, but since this command did not set a password, we would not be able to enter the new user account. Also, 
+    * the entry does contain `/home/test` for the new user, even though this address does not exist either. Even if we set a password with passwd for the *test* user, we would still be unable to create the home directory
+    * the default login shell is `sh`, not `bash`
+  * Can be fixed by modifying `/etc/login.defs`
+* `userdel [USER]`
+  * `userdel -r [USER]` to remove the home directory for bob
+* `/etc/sudoers` contains user privilege specifications, and the permissions for different groups
+  * `sudo visudo` to edit this file, NEVER interact with this file directly
+* `usermod [FLAGS] [USER]`
+  * general modifications for a user; requires logout (restart in some cases) for changes to take effect
+### User group modifications
+  * `-a`: append (add) a group to the user
+  * `-G [GROUP]`: the name of the group we want to add
+  * `sudo gpasswd -d username groupname`
+
+### User name change
+  * `--login|-l [NEW_LOGIN]`: new value of the login name
+  * `sudo usermod -l [NEW_USERNAME] [OLD_USERNAME]`
+### User shell change
+* `sudo usermod --shell [SHELL] [USER]`
+## Groups
+* `groups`
+  * shows the groups the current user is a member of
+  * `groups [USER]` to show groups of a specific user
+* `id`
+  * get the groups and their id's; shows `gid` of a user
+* `/etc/group`
+  * `[GROUP]:x:[GID]:[MEMBER_USERS]`
+* `chown [USER]:[GROUP] [FILE]`
 
 # Permissions
-
 Security is built around the principle of least privileges... this is how the OS maintains that.
 
 ## File Permissions
@@ -79,14 +131,15 @@ password  requisite  pam_deny.so
 password  required  pam_permit.so </code></pre>
 </details>
 
-Each line in these config files will consist of an interface:
+Each line in these config files will consist of ... <br>
+**an interface:**
 
 - `auth`: authentication
 - `account`: authorization (expired, time of day)
 - `password`: changing passwd
 - `session`: other stuff during login/logout
 
-a flag:
+**a flag:**
 
 - `required` must succeed.
 - `requisite` must succeed and notifies immediately of first fail
@@ -102,7 +155,7 @@ a flag:
 | sufficient | If pass, terminates early | :white_check_mark: |  |  :white_check_mark: | :x: |
 requisite |   |  |  |  | :white_check_mark: |
 
-and a module:
+**and a module:**
 
 - `pam_console.so`: checks for `/etc/security/console.apps` file
 - `pam_cracklib.so`: checks new passwds against dictionary attack
@@ -158,6 +211,22 @@ Some things to look for:
 This file stores the password hashes. Read [this blog](https://tbhaxor.com/linux-file-permissions/#how-linux-match-password-and-perform-login) to understand how this file is formatted. Make sure this file is only readable by root.
 
 - `*` (Debian-based) or `!!` (RHEL-based) means a passwd has never been set while `!` means the account is locked. Either way, the user can't login
+- should not be edited directly (unless you what you're doing); 
+  * change user password using `passwd`
+  * change password aging information with `chage`
+
+### Format:
+  * `[USER]:[HASH]:[LAST_PASSWORD_CHANGE]:[MIN_PASSWORD_AGE]:[MAX_PASSWORD_AGE]:[WARNING_PERIOD]:[INACTIVITY_PERIOD]:[EXPIRATION_DATE]:[UNUSED]`
+  * `USER` - user account
+  * `HASH` - hash that uses the format `$type$salt$hash`
+    * if the password field contains `*` or `!`, the user cannot login using password authentication; key-based authentication, or switching to the user is still allowed
+  * `LAST_PASSWORD_CHANGE` - last password change in days, counting from epoch date (Jan 1, 1970)
+  * `MIN_PASSWORD_AGE` - days that must pass before user password can be changed; 0 means no minimum password age
+  * `MAX_PASSWORD_AGE` - days password must be changed; 99999 by default
+  * `WARNING_PERIOD` - days before password expires during which the user is warned to change password
+  * `INACTIVITY_PERIOD` - days after the user password expires before the user account is disabled; empty by default
+  * `EXPIRATION_DATE` - date when the account was disabled, epoch date. 
+  * `UNUSED` - field is ignored, reserved for future use
 
 
 ## `/etc/group`

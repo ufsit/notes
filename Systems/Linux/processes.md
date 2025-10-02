@@ -1,10 +1,13 @@
 # Table of Contents
 
-- [Hijackcing processes](#hijacking-processes)
-   - [Path hijacking](#path-hijcaking)
-   - [Shared libraries](#shared-libraries)
-   - [Symbolic linking](#symbolic-linking)
+- [Table of Contents](#table-of-contents)
+- [Hijacking processes](#hijacking-processes)
+  - [Path hijcaking](#path-hijcaking)
+  - [Shared libraries](#shared-libraries)
+  - [Symbolic linking](#symbolic-linking)
 - [Monitoring processes](#monitoring-processes)
+  - [ps](#ps)
+    - [Example](#example)
 
 # Hijacking processes
 
@@ -22,3 +25,22 @@ If a priviledged program creates a file `filename` in a directory writable by th
 
 
 # Monitoring processes
+## ps
+* `ps` - process inspection
+  * `-e|-A` - shows all processes, identical flags
+  * `-o [OPTIONS]` - user-defined format, accepted options in `STANDARD FORMAT SPECIFIERS` in man
+    * euser - effective text user name
+    * pid - pid
+    * cmd - command and its arguments
+  * `-u [USER_NAME]` - show effective user name of the next argument
+    * `-x` - if we write x, i.e. `-ux`, since there are no `x` users, command will print every user's processes
+  * `--forest` - ASCII art process tree
+  * `-f` - Full-format listing, shows tree
+  * `-H` - show process hierarchy
+  * `-w` - wide output
+### Example
+* `ps aux`
+* `ps auxf`
+* `ps -eo euser,pid,cmd --forest | less`
+* `ps -efwH`
+
