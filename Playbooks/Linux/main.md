@@ -7,6 +7,7 @@
 * lock out all unecessary users
   * `sudo passwd -l <username>` - lock out an account (passwd may be backdoored, be careful)
   * *script - coming soon*
+* verify `/etc/shadow` is has 000 permission (or 640)
 
 # Networking
 * static IPs
