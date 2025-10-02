@@ -4,13 +4,23 @@
   * `sudo passwd user`
 * verify appropriate group membership of sensitive users
 * verify `/etc/sudoers` has no sensitive permissions
+* lock out all unecessary users
+  * `sudo passwd -l <username>` - lock out an account (passwd may be backdoored, be careful)
+  * *script - coming soon*
+
 # Firewall
 * Include appropriate [firewall playbook](./firewall.md) for your distro
 
 # Cronjobs
-* Verify cronjobs of all users: `/var/spool/cron/*` are benign, delete if appropriate
-  * if possible, stop cron service: `cron|crond|cronie`
-* verify system cronjobs `/var/spool/anacron/*` are benign
+* `/etc/crontab`
+* `/etc/cron.d/*`
+* `/etc/cron.{hourly.daily,weekly,monthly}/*`
+* `/var/spool/cron/*`
+* `/var/spool/cron/crontabs/*`
+* `/var/spool/anacron/*`
+* Delete if appropriate
+* if possible, stop cron service: `cron|crond|cronie`
+
 
 
 # Network Analysis
@@ -99,10 +109,6 @@
 # Redteam Files
 * `sudo find / type -f -iname "*redteam*" -o -type d -iname "*redteam*" 2>/dev/null`
 
-# LinPEAS
-* easy win for low-hanging priv-esc-fruit
-  * `curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh | sh > linpeas.out`
-
 # Recent Files
 * show files recently modified (maybe red team didn't change the date on modified files)
   * `sudo find / -type f -mtime -5 2>/dev/null`
@@ -129,7 +135,25 @@
   * `sysdig -c spy_users`
 <!-- TODO -->
 
-# ClamAV
+# ShellShock Check
+* `env x='() { :;}; echo vulnerable' bash -c 'echo hello'`
+* update bash if output is "vulnerable"
+
+# Security Programs
+## LinPEAS
+* easy win for low-hanging priv-esc-fruit
+  * `curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh | sh > linpeas.out`
+
+## ClamAV
+<!-- TODO -->
+
+## Lynis
+<!-- TODO -->
+
+## rkhunter
+<!-- TODO -->
+
+## chkrootkit
 <!-- TODO -->
 
 <!-- TODO: remove Systems/Linux/Playbooks/ncae_checklist.pdf; should be integrated here -->

@@ -33,7 +33,6 @@
 * Disable SPNs for users
   * `setspn -I <computer_name>`: list SPNs
   * `setspn -d service/name hostname`
-
 # Windows Emergency Sheet
 > **WARNING**: The following are likely to break things
 
