@@ -83,11 +83,13 @@ foo.example.com.  A       192.0.2.23
     * `db.empty` is an empty config file that can be used as a template; 
       * **MAKE SURE** to use `cp` instead of making it from scratch since `cp` preserves appropriate permissions
   * most of the work will be on `named.conf.default-zones`
-  * For reverse lookups, only include the **network** part of the address, then reverse it
-    * you will include a reverse lookup entry in `named.conf.default-zones` for every domain in a network
-  * For forward lookups, you will make an entry in `named.conf.default-zones` for every domain
-#### Example
-* From NCAE Mini Hacks
+  * For forward lookup entries in `named.conf`, you will specify the domain and the file containing DNS records for that domain 
+  * For reverse lookup entries in `named.conf`, you will sepcfiy the **network** of domain's IP address (octet-reversed), and the file containin DNS records for that network
+ 
+> #### Create a forward lookup entry in `named.conf.default-zones` for every **domain**
+> #### Create a reverse lookup entry in `named.conf.default-zones` for every **network**
+
+**Example**
 * Suppose the Web server holds the address `192.168.201.2/24`; and that the machine's computer name is `sandbox-Ubuntu`
 * We'll create the appropriate DNS records for this web server at that address
 * **`/etc/bind/named.conf.default-zones`**
@@ -168,8 +170,6 @@ $TTL	86400
 * note the `.` at the end of the domains in `PTR` records; without these, the records break
 * the address for these `PTR` records is the host part of the IP address for the target host
   * i.e. the web server is at `192.168.201.2/24`, so we only put the `2` here
-
-<!-- TODO: Verify section 32. Additional Zones from file 00.TO-INTEGRATE -->
 
 ### Configure Clients
 * modify the client's networking service to point to our DNS server for its nameserver
