@@ -46,8 +46,9 @@ FLUSH PRIVILEGES;
 RENAME USER 'root'@'localhost' to 'newAdminUser'@'localhost';
 FLUSH PRIVILEGES;
 ```
-
+<!-- TODO: connections over SSL: required or allowed; see what needs to be done on web playbook -->
 
 #### Sources
 1. [tecmint](https://www.tecmint.com/mysql-mariadb-security-best-practices-for-linux/)
 2. [Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-secure-mysql-and-mariadb-databases-in-a-linux-vps)
+3. [Snap Shooter](https://snapshooter.com/learn/mysql/top-tips-secure-mysql#5-secure-mysqlmariadb-connection-with-ssltls)
