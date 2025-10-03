@@ -1,12 +1,17 @@
 * `/etc/my.cnf` (RHEL); `/etc/mysql/my.conf` OR `/etc/mysql/mysql.conf.d/mysqld.`cnf (Ubuntu)
 * secure installation (set root's passwd, disable root remote login, remove anon users and test db)
-  * `mysql_secure_installation`
+  * `mysql_secure_installation` OR `mariadb_secure_installation`
 * bind database server to only the website's IP address: only allow remote connections from it
   * `bind-address = <web_server_ip>`
 * disable access to the local filesystem <!-- TODO: test this doesn't break other things-->
   * `local-infile=0`
 * enable logging
-  * `log=/var/log/mysql.log`
+  * mysql
+    * `log=/var/log/mysql.log`
+  * mariadb
+    * `log_error = /avr/log/mysql/error.log`
+    * `general_log=1`
+    * `general_log_file = /var/log/mysql/mysql.log`
 * verify logs are not world readable
   * `ls -l /var/log/mysql*`
 * verify conf file has appropriate permissions:
