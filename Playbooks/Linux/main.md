@@ -34,7 +34,7 @@
 # Network Analysis
 * list all ports with listening socket, and their processes
   * `sudo ss -tunlp`
-  * `sudo ss -taupn is superior`
+  * `sudo ss -taupn will show all ports instead of just listening ports`
 
 
 # Backdoored/Tampered Binaries
