@@ -34,6 +34,7 @@ location /path/to/upload/directory {
   * `add_header Content-Security-Policy "default-src 'self'; script-src 'self'";`
 
 <br>
+<!-- TODO: connections over SSL to the DB: required or allowed?; see what needs to be done on db playbook -->
 
 #### Sources
 * [hackviser](https://hackviser.com/tactics/hardening/nginx)

@@ -22,6 +22,7 @@ SSLCipherSuite HIGH:!aNULL:!MD5
   * `Header set Content-Security-Policy "default-src 'self'; script-src 'self'; object-src 'none'"`
 
 <br>
+<!-- TODO: connections over SSL to the DB: required or allowed?; see what needs to be done on db playbook -->
 
 #### Sources
 * [hackviser](https://hackviser.com/tactics/hardening/apache)

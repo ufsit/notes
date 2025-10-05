@@ -2,7 +2,7 @@
 * secure installation (set root's passwd, disable root remote login, remove anon users and test db)
   * `mysql_secure_installation` OR `mariadb_secure_installation`
 * bind database server to only the website's IP address: only allow remote connections from it
-  * `bind-address = <web_server_ip>`
+  * `bind-address = 127.0.0.1, <web_server_ip>`
 * disable access to the local filesystem <!-- TODO: test this doesn't break other things-->
   * `local-infile=0`
 * enable logging
