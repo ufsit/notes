@@ -15,7 +15,6 @@
   - [Capabilities](#capabilities)
   - [Mandatory Access Control](#mandatory-access-control)
   - [PAM](#pam)
-- [If succeeds, skip next line (so jumps to permit). The yescrypt is secure hashing algorithm](#if-succeeds-skip-next-line-so-jumps-to-permit-the-yescrypt-is-secure-hashing-algorithm)
     - [:red\_circle: Red team :red\_circle:](#red_circle-red-team-red_circle)
 - [Important Files](#important-files)
   - [`/etc/passwd`](#etcpasswd)
@@ -266,7 +265,7 @@ This file stores the password hashes. Read [this blog](https://tbhaxor.com/linux
 
 This file lists the users in each group. This is referenced when checking group permissions for things like file access. Some groups can be used for **privesc** and should be checked carefully. 
 
-- **sudo** (Debian-based) and **wheel** (RHEL-based) are important, as well as others
+- **sudo** (Debian-based) and **wheel** (RHEL-based) are important, as well as `adm`, `docker`, and `dialout`
 
 You'll notice that the passwd field in this file also has `x`, which indicates a corresponding shadow file...
 
@@ -325,19 +324,25 @@ _apt                 Debian --> security measure for installing packages
 bin                  Owns files in /bin and /usr/bin. Should not be running process
 daemon               Runs background processes (e.g. syslog or cups)
 dbus                 Runs dbus-daemon for the message bus
+dhcpd                Obtains network config info via DHCP
+kernoops             Reports kernel oops messages (non-fatal errors)
 nobody               Generic user account for minimum privileges (e.g. NFS server)
 operator             handles OS stuff, like backups + maintenance. Kept for historical compatability
 root                 Sudo
+_rpc                 Supports remote procedure calls, for services like NFS
 shutdown             Handles graceful shutdowns/reboots.
 sync                 Runs sync command, which flushes buffers to disk for data integrity
 sys                  Owns system files and runs generic priveledged processes
 systemd-bus-proxy    systemd proxy for the D-bus
 systemd-coredump     systemd provides crash dumps
 systemd-journal-remote  systemd journal can securely send/receive logs to remote server
+systemd-network      Manages network interface + configuration
+systemd-oom          terminates processes/groups before a kernel out-of-memory event happens
 systemd-resolve      systemd-resolved for name resolution (DNS, LLMNR, mDNS)
 systemd-timesync     systemd-timesyncd synchronizes with NTP
+systemd-updates      marks system resources as updated
 tty                  owns terminal devices. Rarely used in processes, but still handles permissions
-
+whoopsie             Ubuntu crash reports
 ```
 
 ## Optional Users
@@ -362,6 +367,7 @@ cockpit-wsinstance   Web-based admin UI for Linux
 colord               color management
 cron                 scheduled jobs
 cups                 Printing services
+cups-browsed         Printing services
 cups-pk-helper       Printing services
 cyrus                email
 Debian-exim          mail
@@ -375,15 +381,18 @@ dnsmasq              Lightweight DNS/DHCP
 _flatpak             Flatpak apps
 ftp                  FTP user
 fwupd-refresh        Firmware update service
+games                Legacy user for game scores
 geoclue              Location
 git                  Git version control
 git_daemon           Git version control
+gnats                Bug reporting
 gnome-initial-setup  GNOME initial setup
 hplip                HP printer drivers
 http                 Web servers
 lighttpd             Web servers
 nginx                Web servers
 insights             RHEL security
+irc                  Real-time chat
 landscape            Canonical’s system management
 ldap                 LDAP
 libstoragemgmt       Storage management
@@ -417,13 +426,15 @@ squid                Proxy
 sshd                 SSH
 sssd                 LDAP, Kerberos
 strongswan           VPN
+syslog               Logging
 tcpdump              Pcap
 tss                  TPM security
 unbound              DNS resolver
 usbmux               iOS USB
+uucp                 Legacy user for remote file transfer/mail
 uuidd                Generates unique identifiers.
+vboxadd              Virtual machines
 www-data             web
 www                  web
 xfs                  XFS filesystem
-
 ```
