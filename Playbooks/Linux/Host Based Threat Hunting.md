@@ -9,15 +9,15 @@ Real time view of running processes
 
 
 Commands to use: $ top, $ htop, $ mpstat, $ sar
--top = view of running processes
--htop = user friendly view of top
--mpstat = display reports of a processor's statistics
--sar = system activities
--sar -u = CPU utilization
--sar -r = Memory usage
--sar -b = I/O and transfer rates
--sar -n DEV = network statistics for devices
--sar -a = all available statistics
+* top = view of running processes
+* htop = user friendly view of top
+* mpstat = display reports of a processor's statistics
+* sar = system activities
+* sar -u = CPU utilization
+* sar -r = Memory usage
+* sar -b = I/O and transfer rates
+* sar -n DEV = network statistics for devices
+* sar -a = all available statistics
 
 IOC's: 
 - Spikes in CPU/Memory usage
@@ -45,11 +45,11 @@ IOC’s:
 Inspect active connections/sockets:
 
 Commands to use: $ ss, $ netstat
--t = TCP sockets
--u = UDP sockets
--n = numerical address/port #
--a = All sockets
--p = PID / process owner
+* t = TCP sockets
+* u = UDP sockets
+* n = numerical address/port #
+* a = All sockets
+* p = PID / process owner
 
 IOC's:
 
@@ -64,12 +64,12 @@ IOC's:
 Identify process usages and their paths
 
 Commands to use: $ top, $ htop, $ pstree, $ ps
--top = view of running processes
--htop = user friendly view of top
--pstree = tree structure of processes, visualization of relationships/usage
--ps -a = display all processes
--ps -u = user friendly format
--ps -x = processes not attached to control 
+* top = view of running processes
+* htop = user friendly view of top
+* pstree = tree structure of processes, visualization of relationships/usage
+* ps -a = display all processes
+* ps -u = user friendly format
+* ps -x = processes not attached to control 
 
 IOC's:
 - Abnormal behavior, i.e. excessive resource usage, I/O activity, elevate privileges, modify user accounts, accessing sensitive files
@@ -80,10 +80,10 @@ IOC's:
 Discover open/active files
 
 Commands to use: $ lsof, $ netstat
--lsof -p PID = inspect files opened by a specific process
--lsof -u username = list files opened by a specific user
--lsof -c command = list files opened by a command
--lsof -i = list network connections (TCP/UDP)
+* lsof -p PID = inspect files opened by a specific process
+* lsof -u username = list files opened by a specific user
+* lsof -c command = list files opened by a command
+* lsof -i = list network connections (TCP/UDP)
 
 IOC's:
 - Activity with sensitive files, i.e. exfiltration, ransomware, injection
