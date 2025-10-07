@@ -11,7 +11,7 @@
         <li> <code>./listUsersColor.sh</code></li>   
         </ol>
     </details>
-2. Find and fix file permissions
+2. Find and fix [file permissions](#important-files)
 
 The results should look like below. **X** indicates the configuration exists, read below to patch them.
 
