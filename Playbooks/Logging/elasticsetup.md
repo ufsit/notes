@@ -65,7 +65,6 @@ output.elasticsearch:
     enabled: true
     certificate_authorities: ["/etc/elasticsearch/certs/http_ca.crt"]
 ```
-**Make sure you use two spaces for the indents**
 6. `sudo systemctl daemon-reload && sudo systemctl enable metricbeat --now`
 7. Give it a few minutes and check Stack Monitoring on the elastic dashboard
 
