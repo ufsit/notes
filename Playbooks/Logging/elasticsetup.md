@@ -7,8 +7,8 @@ Will be the full setup for Elastic logging
 3. ```echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list```  
 4. ```sudo apt-get update && sudo apt-get install elasticsearch```  
 **Make sure to save the password this spits out**  
-5. ```
-sudo systemctl daemon-reload
+5. 
+```sudo systemctl daemon-reload
 sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 ```
