@@ -8,7 +8,8 @@ Will be the full setup for Elastic logging
 4. ```sudo apt-get update && sudo apt-get install elasticsearch```  
 **Make sure to save the password this spits out**  
 5. 
-```sudo systemctl daemon-reload
+```
+sudo systemctl daemon-reload
 sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 ```
