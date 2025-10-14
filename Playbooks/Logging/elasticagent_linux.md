@@ -24,9 +24,10 @@ output.elasticsearch:
     ca_trusted_fingerprint: "<ca_fingerprint>"
 ```
 3. Run `sudo auditbeat test output` to test our configurations
-4. Place our auditd rules into `/etc/auditbeat/audit.rules.d/rules.conf`
-5. `sudo systemctl daemon-reload && sudo systemctl enable auditbeat --now`
-6. Run `sudo auditbeat show audit-rules` to make sure the rules were loaded properly
+4. If auditd is not already installed run ```sudo apt install auditd audispd-plugins``` then enable and start the service  
+5. Place our auditd rules into `/etc/auditbeat/audit.rules.d/rules.conf`
+6. `sudo systemctl daemon-reload && sudo systemctl enable auditbeat --now`
+7. Run `sudo auditbeat show audit-rules` to make sure the rules were loaded properly
 **TODO: Add security rules for alerting and detection**
 ### Filebeat
 1. `sudo apt-get install filebeat`
