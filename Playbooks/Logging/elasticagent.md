@@ -25,7 +25,7 @@ output.elasticsearch:
 ```
 6. Run `sudo auditbeat test output` to test our configurations
 7. Place our auditd rules into `/etc/auditbeat/audit.rules.d/rules.conf`
-8. `sudo systemctl enable auditbeat --now`
+8. `sudo systemctl daemon-reload && sudo systemctl enable auditbeat --now`
 9. Run `sudo auditbeat show audit-rules` to make sure the rules were loaded properly
 **TODO: Add security rules for alerting and detection**
 ### Filebeat
@@ -36,9 +36,22 @@ output.elasticsearch:
 5. Edit the corresponding module file at `/etc/filebeat/modules.d/<service_module>.yml` and enable the logs you want
 6. If there is an unsupported service, edit `/etc/filebeat/filebeat.yml` and at `paths:` under `filebeat.inputs:` add the log path for the service to monitor
 7. Run `sudo filebeat test output` and `sudo filebeat test config` to make sure everything is valid
-8. `sudo systemctl enable --now filebeat`
+8. `sudo systemctl daemon-reload && sudo systemctl enable filebeat --now`
 **Service logs are now forwarded to the ELK server**
 ### Packetbeat
-**TODO: Test setting up packetbeat and look at configurations**
+1. `sudo apt-get install packetbeat`
+2. Repeat step 5 from Auditbeat in the file `/etc/packetbeat/packetbeat.yml` and don't touch the `pipeline` variable
+3. Edit the ports as needed in `/etc/packetbeat/packetbeat.yml` (Not necessary if everything is using the standard port)
+4. Run `sudo packetbeat devices` and take note of the interface you want to monitor
+5. Edit `/etc/packetbeat/packetbeat.yml` and add the following lines
+```
+packetbeat.interfaces.device: <interface name or number>
+packetbeat.interfaces.type: af_packet
+```
+6. Run `sudo packetbeat test output` and `sudo packetbeat test config` to make sure everything works properly
+7. `sudo systemctl daemon-reload && systemctl enable packetbeat --now`
+8. In the dashboard go to Stack Management -> Data Views and check if `packetbeat-*` exists. If it does, you are done
+9. Otherwise, click Create data view and give it the name and index pattern `packetbeat-*` and click save
+**TODO: Look into alerting on specific packet patterns**
 
 **TODO: Figure out setting up and configuring on Windows/Other Linux-like systems**
