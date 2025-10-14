@@ -27,6 +27,7 @@ output.elasticsearch:
 4. Place our auditd rules into `/etc/auditbeat/audit.rules.d/rules.conf`
 5. `sudo systemctl daemon-reload && sudo systemctl enable auditbeat --now`
 6. Run `sudo auditbeat show audit-rules` to make sure the rules were loaded properly
+7. If you don't see any rules run `sudo systemctl restart auditbeat` and check again
 
 **TODO: Add security rules for alerting and detection**
 ### Filebeat
