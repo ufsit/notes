@@ -30,7 +30,7 @@ output.elasticsearch:
 **TODO: Add security rules for alerting and detection**
 ### Filebeat
 1. `sudo apt-get install filebeat`
-2. Repeat step 5 from Auditbeat but edit `/etc/filebeat/filebeat.yml` this time
+2. Repeat step 2 from Auditbeat but edit `/etc/filebeat/filebeat.yml` this time
 3. Run `sudo filebeat modules list` to check for the supported services
 4. Run `sudo filebeat modules enable <service_module>` for each service on the machine
 5. Edit the corresponding module file at `/etc/filebeat/modules.d/<service_module>.yml` and enable the logs you want
@@ -40,7 +40,7 @@ output.elasticsearch:
 **Service logs are now forwarded to the ELK server**
 ### Packetbeat
 1. `sudo apt-get install packetbeat`
-2. Repeat step 5 from Auditbeat in the file `/etc/packetbeat/packetbeat.yml` and don't touch the `pipeline` variable
+2. Repeat step 2 from Auditbeat in the file `/etc/packetbeat/packetbeat.yml` and don't touch the `pipeline` variable
 3. Edit the ports as needed in `/etc/packetbeat/packetbeat.yml` (Not necessary if everything is using the standard port)
 4. Run `sudo packetbeat devices` and take note of the interface you want to monitor
 5. Modify this line in `/etc/packetbeat/packetbeat.yml`: `packetbeat.interfaces.device: <interface name or number>` to monitor the correct interface
