@@ -18,7 +18,7 @@ sudo systemctl start elasticsearch
 Assuming you did the first 4 steps of Elasticsearch setup
 1. `sudo apt-get install kibana` (This may take a while)
 2. `sudo sed -i s/'#server.host: "localhost"'/'server.host: "0.0.0.0"'/ /etc/kibana/kibana.yml`
-3. `sudo /usr/share/kibana/bin/kibana-encryption-keys generate | tail -n 4 | head -n 3 | sudo tee -a /etc/kibana/kibana.yml`
+3. `sudo /usr/share/kibana/bin/kibana-encryption-keys generate | grep xpack.*: | sudo tee -a /etc/kibana/kibana.yml`
 4. 
 ```
 sudo systemctl daemon-reload
