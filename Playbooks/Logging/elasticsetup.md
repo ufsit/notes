@@ -68,4 +68,4 @@ output.elasticsearch:
 6. `sudo systemctl daemon-reload && sudo systemctl enable metricbeat --now`
 7. Give it a few minutes and check Stack Monitoring on the elastic dashboard
 
-**The elastic server should now be set up! (Continue to Agent Setup Playbook[elasticagent.md])**
+**The elastic server should now be set up! [Continue to Agent Setup Playbook](./elasticagent.md)**
