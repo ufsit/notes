@@ -43,10 +43,26 @@ output.elasticsearch:
 2. Repeat step 5 from Auditbeat in the file `/etc/packetbeat/packetbeat.yml` and don't touch the `pipeline` variable
 3. Edit the ports as needed in `/etc/packetbeat/packetbeat.yml` (Not necessary if everything is using the standard port)
 4. Run `sudo packetbeat devices` and take note of the interface you want to monitor
+5. Modify this line in `/etc/packetbeat/packetbeat.yml`: `packetbeat.interfaces.device: <interface name or number>` to monitor the correct interface
 5. Edit `/etc/packetbeat/packetbeat.yml` and add the following lines
 ```
-packetbeat.interfaces.device: <interface name or number>
 packetbeat.interfaces.type: af_packet
+processors:
+  - drop_event:
+      when:
+        or:
+          - not:
+              has_fields: ['source.ip', 'destination.ip']
+          - and:
+            - equals:
+                destination.ip: 'server_ip'
+            - equals:
+                destination.port: 9200
+          - and:
+            - equals:
+                destination.ip: 'ff02::2'
+            - equals:
+                network.transport: 'ipv6-icmp'
 ```
 6. Run `sudo packetbeat test output` and `sudo packetbeat test config` to make sure everything works properly
 7. `sudo systemctl daemon-reload && systemctl enable packetbeat --now`
