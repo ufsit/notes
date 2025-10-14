@@ -8,12 +8,12 @@ Some initial setup (skip if on the elastic server)
 2. `sudo apt-get install apt-transport-https` 
 3. `echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list`
 4. `sudo apt-get update`
+5. Log into elastic dashboard and go to Stack Management -> API Keys -> Create API Key
+6. Give the API key the name `<hostname>_key` and click create API
+7. When the key pops up, click on the dropdown and select Beats. The key should look something like `sIqr35kBnoxDjXVkcovB:34eROMe-vxfMoy6iTE6Fiw` **Save this somewhere safe. We will use this for every beat on the machine**
 ### Auditbeat
 1. `sudo apt-get install auditbeat`
-2. Log into elastic dashboard and go to Stack Management -> API Keys -> Create API Key
-3. Give the API key the name `<hostname>_key` and click create API
-4. When the key pops up, click on the dropdown and select Beats. The key should look something like `sIqr35kBnoxDjXVkcovB:34eROMe-vxfMoy6iTE6Fiw` **Save this somewhere safe. We will use this for every beat on the machine**
-5. Edit `/etc/auditbeat/auditbeat.yml` and find the section `output.elasticsearch:` and replace it with:
+2. Edit `/etc/auditbeat/auditbeat.yml` and find the section `output.elasticsearch:` and replace it with:
 ```
 output.elasticsearch:
   hosts: ["https://<server_ip>:9200"]
@@ -23,10 +23,10 @@ output.elasticsearch:
     enabled: true
     ca_trusted_fingerprint: "<ca_fingerprint>"
 ```
-6. Run `sudo auditbeat test output` to test our configurations
-7. Place our auditd rules into `/etc/auditbeat/audit.rules.d/rules.conf`
-8. `sudo systemctl daemon-reload && sudo systemctl enable auditbeat --now`
-9. Run `sudo auditbeat show audit-rules` to make sure the rules were loaded properly
+3. Run `sudo auditbeat test output` to test our configurations
+4. Place our auditd rules into `/etc/auditbeat/audit.rules.d/rules.conf`
+5. `sudo systemctl daemon-reload && sudo systemctl enable auditbeat --now`
+6. Run `sudo auditbeat show audit-rules` to make sure the rules were loaded properly
 **TODO: Add security rules for alerting and detection**
 ### Filebeat
 1. `sudo apt-get install filebeat`
