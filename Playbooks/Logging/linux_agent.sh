@@ -1,41 +1,47 @@
 #!/bin/sh
 
 if [ "$(id -u)" -ne 0 ]; then
-  echo "This script must be run as root." 1>&2
+  echo "Run this script as run (i.e. sudo sh linux_agent.sh)" 1>&2
   exit 1
 fi
 
 hostname=$(hostname)
+if [ $# -lt 3 ]; then
+  printf "ELK Server ip: "
+  read -r ip
+  printf "CA Fingerprint: "
+  read -r finger
 
-printf "ELK Server ip: "
-read -r ip
-printf "CA Fingerprint: "
-read -r finger
+  OLD_STTY_SETTINGS=$(stty -g)
+  stty -echo
+  trap 'stty "$OLD_STTY_SETTINGS"; exit' EXIT INT HUP TERM
 
-OLD_STTY_SETTINGS=$(stty -g)
-stty -echo
-trap 'stty "$OLD_STTY_SETTINGS"; exit' EXIT INT HUP TERM
-
-printf "Elastic password: "
-read -r pass
-stty "$OLD_STTY_SETTINGS"
-printf "\n"
-
-if command -v apt > /dev/null 2>&1; then
-  if ! [ -f "/etc/apt/sources.list.d/elastic-8.x.list" ]; then
-    printf "Installing dependancies..."
-    printf "\n"
-    wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg > /dev/null
-    apt-get install apt-transport-https -y > /dev/null
-    echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | tee /etc/apt/sources.list.d/elastic-8.x.list > /dev/null
-    apt-get update -y > /dev/null
-    printf "Success!"
-  fi
-  printf "\nInstalling beats...\n"
-  apt-get install auditbeat filebeat packetbeat -y -qq
-  printf "\nSuccess!\n"
+  printf "Elastic password: "
+  read -r pass
+  stty "$OLD_STTY_SETTINGS"
+  printf "\n"
+else
+  ip=$1
+  finger=$2
+  pass=$3
 fi
 
+if [ $# -lt 3 ]; then 
+  if command -v apt > /dev/null 2>&1; then
+    if ! [ -f "/etc/apt/sources.list.d/elastic-8.x.list" ]; then
+      printf "Installing dependancies..."
+      printf "\n"
+      wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg > /dev/null
+      apt-get install apt-transport-https -y > /dev/null
+      echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | tee /etc/apt/sources.list.d/elastic-8.x.list > /dev/null
+      apt-get update -y > /dev/null
+    fi
+    printf "\nInstalling beats...\n"
+    apt-get install auditbeat filebeat packetbeat -y -qq
+  fi
+else
+    apt-get install auditbeat filebeat packetbeat -y -qq
+fi
 result=$(curl -k -u elastic:$pass -X POST "https://$ip:9200/_security/api_key?pretty" -H 'Content-Type: application/json' -d"
 {
   \"name\": \"$hostname\", 
@@ -60,28 +66,16 @@ for beat in auditbeat filebeat packetbeat; do
   $beat setup -E setup.kibana.host="http://$ip:5601" -E setup.kibana.username="elastic" -E setup.kibana.password="$pass" -E output.elasticsearch.hosts="[\"https://$ip:9200\"]" -E output.elasticsearch.username="elastic" -E output.elasticsearch.password="$pass" -E output.elasticsearch.ssl.enabled="true" -E output.elasticsearch.ssl.ca_trusted_fingerprint="$finger"
 done
 
-cat >> /etc/auditbeat/auditbeat.yml << EOL
+for beat in auditbeat filebeat packetbeat; do
+  cat >> /etc/$beat/$beat.yml << EOL
 output.elasticsearch.hosts: ["https://$ip:9200"]
 output.elasticsearch.api_key: "$api_key"
 output.elasticsearch.ssl.enabled: true
 output.elasticsearch.ssl.ca_trusted_fingerprint: "$finger"
-setup.kibana.host: $ip
 EOL
-
-cat >> /etc/filebeat/filebeat.yml << EOL
-output.elasticsearch.hosts: ["https://$ip:9200"]
-output.elasticsearch.api_key: "$api_key"
-output.elasticsearch.ssl.enabled: true
-output.elasticsearch.ssl.ca_trusted_fingerprint: "$finger"
-setup.kibana.host: $ip
-EOL
+done
 
 cat >> /etc/packetbeat/packetbeat.yml << EOL
-output.elasticsearch.hosts: ["https://$ip:9200"]
-output.elasticsearch.api_key: "$api_key"
-output.elasticsearch.ssl.enabled: true
-output.elasticsearch.ssl.ca_trusted_fingerprint: "$finger"
-setup.kibana.host: $ip
 packetbeat.interfaces.type: af_packet
 processors:
   - drop_event:
@@ -111,7 +105,7 @@ for beat in auditbeat filebeat packetbeat; do
     printf "Output test failed for $beat\n"
   fi
 done
-curl https://raw.githubusercontent.com/ufsit/shreksophone1/refs/heads/main/rules.conf -o /etc/auditbeat/audit.rules.d/rules.conf
+curl -q https://raw.githubusercontent.com/ufsit/shreksophone1/refs/heads/main/rules.conf -o /etc/auditbeat/audit.rules.d/rules.conf
 
 printf "Starting beats...\n"
 
