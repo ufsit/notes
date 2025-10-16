@@ -2,6 +2,11 @@
 Work in progress...
 
 Will eventually include all relevant operating systems
+## Script
+Currently we have a script that works on Ubuntu 16 and up
+
+You can find the script [here](/Tools/SIEM/linux_agent.sh)
+
 ## Debian-Like
 Some initial setup (skip if on the elastic server)
 1. `wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg`

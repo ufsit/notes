@@ -2,6 +2,11 @@
 Work in progress...
 
 Will be the full setup for Elastic logging
+## Script
+We currently have a script that works on Ubuntu 20 and up
+
+You can find it [here](/Tools/SIEM/install_server.sh)
+
 ## Elasticsearch
 1. `wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg`
 2. `sudo apt-get install apt-transport-https` 
