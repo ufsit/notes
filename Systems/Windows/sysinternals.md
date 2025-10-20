@@ -2,7 +2,7 @@
 
 * Sysinternals
     - Back in 2006 Microsoft bought the company that made Sysinternals
-    - **This was hueg news. These tools were really good and had advanced utilities for advanced users/sysadmins**
+    - **This was huge news. These tools were really good and had advanced utilities for advanced users/sysadmins**
 
 * Cool sidenote: **The Sony Rootkitted CDs incident**
     - Rootkit: "A rootkit is a collection of computer software, typically malicious, designed to enable access to a computer or an area of its software that is not otherwise allowed and often masks its existence or the existence of other software."
