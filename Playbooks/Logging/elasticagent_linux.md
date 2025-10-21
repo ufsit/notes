@@ -16,6 +16,25 @@ sudo apt-get install apt-transport-https
 echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
 sudo apt-get update
 ```
+3. Run this command to get an api key[^7]:
+```
+curl -k -X POST -u elastic:<password> "https://<server_ip>:9200/_security/api_key?pretty" -H 'Content-Type: application/json' -d'
+{
+  "name": "filebeat_host001",
+  "role_descriptors": {
+    "filebeat_writer": {
+      "cluster": ["monitor", "read_ilm", "read_pipeline"],
+      "index": [
+        {
+          "names": ["filebeat-*", "auditbeat", packetbeat"],
+          "privileges": ["view_index_metadata", "create_doc", "auto_configure"]
+        }
+      ]
+    }
+  }
+}
+'
+```
 ### Auditbeat [^2]
 1. `sudo apt-get install auditbeat`
 2. Edit `/etc/auditbeat/auditbeat.yml` and find the section `output.elasticsearch:` and replace it with:
@@ -86,3 +105,4 @@ processors:
 [^4]: https://www.elastic.co/guide/en/beats/filebeat/8.19/filebeat-installation-configuration.html
 [^5]: https://www.elastic.co/guide/en/beats/packetbeat/8.19/packetbeat-installation-configuration.html
 [^6]: https://www.elastic.co/guide/en/beats/packetbeat/8.19/defining-processors.html
+[^7]: https://www.elastic.co/guide/en/beats/filebeat/8.19/beats-api-keys.html
