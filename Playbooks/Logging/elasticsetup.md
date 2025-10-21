@@ -7,19 +7,22 @@ We currently have a script that works on Ubuntu 20 and up
 
 You can find it [here](/Tools/SIEM/install_server.sh)
 
-## Elasticsearch
+## Elasticsearch[^1]
 1. `wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg`
-2. `sudo apt-get install apt-transport-https` 
-3. `echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list`
-4. `sudo apt-get update && sudo apt-get install elasticsearch`
+2. 
+```
+sudo apt-get install apt-transport-https
+echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
+sudo apt-get update && sudo apt-get install elasticsearch
+```
 **Make sure to save the password this spits out**
-5. 
+3. 
 ```
 sudo systemctl daemon-reload
 sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 ```
-## Kibana
+## Kibana [^2]
 Assuming you did the first 4 steps of Elasticsearch setup
 1. `sudo apt-get install kibana` (This may take a while)
 2. `sudo sed -i s/'#server.host: "localhost"'/'server.host: "0.0.0.0"'/ /etc/kibana/kibana.yml`
@@ -74,3 +77,7 @@ output.elasticsearch:
 7. Give it a few minutes and check Stack Monitoring on the elastic dashboard
 
 **The elastic server should now be set up! [Linux Agent Setup](./elasticagent_linux.md), [Windows Agent Setup](./elasticagent_windows.md)**
+
+# References
+[^1]: https://www.elastic.co/guide/en/elasticsearch/reference/8.19/deb.html#deb-repo
+[^2]: https://www.elastic.co/guide/en/kibana/8.19/deb.html
