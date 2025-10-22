@@ -4,7 +4,7 @@
 ```
 Start-BitsTransfer -Source https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.19.5-windows-x86_64.zip -Destination "C:\Program Files\winbeat.zip"
 ```  
-2. Extract the zip
+2. Extract the zip and make sure the folder with all the winlogbeat stuff is named *Winlogbeat* (case sensative) in Program Files
 3. ```
    .\install-service-winlogbeat.ps1
    ```
