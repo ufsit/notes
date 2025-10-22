@@ -71,7 +71,7 @@ NETMASK=<NETMASK>
 ZONE=<FIREWALLD_ZONE_NAME>   # optional, when firewalld is enabled
 GATEWAY=<IP_ADDRESS>        # if needed
 ```
-* Add/Edit the following as needed: (for a static address) <!-- TODO: fact check the following-->
+* Add/Edit the following as needed: (for a dynamic address) 
 ```
 TYPE=Ethernet
 BOOTPROTO=dhcp

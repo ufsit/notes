@@ -137,12 +137,12 @@
 * *script - coming soon*
 
 # opensnitch
-<!-- TODO -->
+
 
 # sysdig
 * see exactly what users are running
   * `sysdig -c spy_users`
-<!-- TODO -->
+
 
 # ShellShock Check
 * `env x='() { :;}; echo vulnerable' bash -c 'echo hello'`
@@ -154,15 +154,14 @@
   * `curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh | sh > linpeas.out`
 
 ## ClamAV
-<!-- TODO -->
+
 
 ## Lynis
-<!-- TODO -->
+
 
 ## rkhunter
-<!-- TODO -->
+
 
 ## chkrootkit
-<!-- TODO -->
 
-<!-- TODO: remove Systems/Linux/Playbooks/ncae_checklist.pdf; should be integrated here -->
+

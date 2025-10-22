@@ -102,8 +102,7 @@
   * one GPO is a collection of policies/settings that are applied onto OUs
 ## Group Policy Management
 * the console for managing domain-level GPOs
-* You create a GPO under **Group Policy Objects**, then link it to the OU you want the policies to apply to 
-  <!-- TODO: are the available OUs that can be linked the domain OU and any user-created OU? -->
+* You create a GPO under **Group Policy Objects**, then link it to the OU you want the policies to apply to
   * any GPO linked to an OU will also apply to any sub-OUs under it
 * When selecting a GPO, 
   * you can see its **scope**, showing where the GPO is linked to 
