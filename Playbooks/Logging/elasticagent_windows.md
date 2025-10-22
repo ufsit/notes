@@ -1,5 +1,5 @@
 # Elastic agent setup for Windows  
-**Install Sysmon before doing this if possible**
+**Install Sysmon before doing this if possible**  
 1.
 ```
 Start-BitsTransfer -Source https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.19.5-windows-x86_64.zip -Destination "C:\Program Files\winbeat.zip"
