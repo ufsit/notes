@@ -1,5 +1,9 @@
 # Elastic agent setup for Windows  
 **Install Sysmon before doing this if possible**  
+If Sysmon was not installed using the script attempt to run this before getting the zip  
+```
+Import-Module BitsTransfer
+```  
 1.
 ```
 Start-BitsTransfer -Source https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.19.5-windows-x86_64.zip -Destination "C:\Program Files\winbeat.zip"
