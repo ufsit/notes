@@ -55,7 +55,6 @@ $acl = Get-Acl \\fs1\shared\sales $AccessRule = New-Object System.Security.Acces
 ```
 
 * To wipe a user's permissions, use the `PurgeAccessRules`, only works with SIDs and explicit permissions, not inherited ones
-<!-- TODO: provide example -->
 
 # Inheritance
 * `SetAccesRuleProtection($bool, $bool)` to manage inheritance

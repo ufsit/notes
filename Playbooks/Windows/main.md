@@ -1,4 +1,3 @@
-<!-- TODO: Review -->
 <!-- Inheritance from Alex Christy -->
 # Windows ASAP Tasks
 - Roll passwords (script link here)

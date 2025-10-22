@@ -1,9 +1,9 @@
-* `/etc/my.cnf` (RHEL); `/etc/mysql/my.conf` OR `/etc/mysql/mysql.conf.d/mysqld.`cnf (Ubuntu)
+* `/etc/my.cnf` (RHEL); `/etc/mysql/my.conf` OR `/etc/mysql/mysql.conf.d/mystd.`cnf (Ubuntu)
 * secure installation (set root's passwd, disable root remote login, remove anon users and test db)
   * `mysql_secure_installation` OR `mariadb_secure_installation`
 * bind database server to only the website's IP address: only allow remote connections from it
   * `bind-address = 127.0.0.1, <web_server_ip>`
-* disable access to the local filesystem <!-- TODO: test this doesn't break other things-->
+* disable access to the local filesystem
   * `local-infile=0`
 * enable logging
   * mysql
@@ -32,7 +32,7 @@ FLUSH PRIVILEGES;
   * `UPDATE mysql.user SET Password=PASSWORD('secure_passwd') WHERE User='target_user';`
 * Update a user's host field to contain benign addresses (except for the db's user, write localhost)
   * `UPDATE mysql.user SET Host='localhost' WHERE User="demo-user";`
-* Delete empty/malicious/unecessary users
+* Delete empty/malicious/unnecessary users
 ```sql
 DELETE FROM mysql.user WHERE User="";
 FLUSH PRIVILEGES;
@@ -46,9 +46,10 @@ FLUSH PRIVILEGES;
 RENAME USER 'root'@'localhost' to 'newAdminUser'@'localhost';
 FLUSH PRIVILEGES;
 ```
-<!-- TODO: connections over SSL: required or allowed; see what needs to be done on web playbook -->
+
+* Enable connections over SSL
 
 #### Sources
-1. [tecmint](https://www.tecmint.com/mysql-mariadb-security-best-practices-for-linux/)
+1. [teaming](https://www.tecmint.com/mysql-mariadb-security-best-practices-for-linux/)
 2. [Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-secure-mysql-and-mariadb-databases-in-a-linux-vps)
 3. [Snap Shooter](https://snapshooter.com/learn/mysql/top-tips-secure-mysql#5-secure-mysqlmariadb-connection-with-ssltls)
