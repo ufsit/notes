@@ -12,7 +12,7 @@ Start-BitsTransfer -Source https://artifacts.elastic.co/downloads/beats/winlogbe
    (Get-Content winlogbeat.yml -Raw) -replace "`n","`r`n" | Set-Content winlogbeat_fixed.yml
    ```  
    Run this to better format the yml file if it is not formatted properly then delete the original and rename this one to winlogbeat.yml once you make sure it's formatted correctly
-5. In winlogbeat.yml under **output.elasticsearch:** ```hosts: [https://{host ip}:59200]``` and until API key can be figured out set username: to "elastic" and password: to "{password given by server controller}"
+5. In winlogbeat.yml under **output.elasticsearch:** ```hosts: [https://{host ip}:9200]``` and until API key can be figured out set username: to "elastic" and password: to "{password given by server controller}"
 6. Still in the yml add under step 5
    ```
    ssl:
