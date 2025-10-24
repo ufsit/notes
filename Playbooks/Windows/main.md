@@ -10,7 +10,7 @@
        * `Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultInboundAction Block`
 - Verify Firewall enabled
   - Control Panel $\rightarrow$ System and Security $\rightarrow$ Windows Defender Firewall $\rightarrow$ Turn Windows Defender Firewall on or off $\rightarrow$ Turn on Windows Defender Firewall (for private, public, and domain networks)
-* Verify Group Policy: `gpedit.msc`
+* Verify Group Policy: `Win+R` `gpedit.msc`
   * **Windows Update**
     * Computer Configuration $\rightarrow$ Administrative Templates $\rightarrow$ Windows Components $\rightarrow$ Windows Update $\rightarrow$ Manage End user Experience $\rightarrow$ Configure Automatic Updates: "Enabled"
   * **Windows Defender**
