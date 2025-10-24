@@ -1,7 +1,7 @@
 <!-- Inheritance from Alex Christy -->
 # Windows ASAP Tasks
 - Roll passwords (script link here)
-- Disable guest account
+- Disable guest account and possibly the Administrator account if given another account that has the same perms
 - RDP enabled on firewall
   - Windows Defender Firewall with Advanced Security $\rightarrow$ Inbound Rules
     * Use presets for RDP
