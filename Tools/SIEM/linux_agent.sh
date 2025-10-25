@@ -5,7 +5,7 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-hostname=$(hostname)
+hostname=$(hostname 2>/dev/null || hostnamectl hostname)
 if [ $# -lt 3 ]; then
   printf "ELK Server ip: "
   read -r ip
@@ -37,7 +37,34 @@ if [ $# -lt 3 ]; then
       apt-get update -y > /dev/null
     fi
     printf "\nInstalling beats...\n"
-    apt-get install auditbeat filebeat packetbeat -y -qq
+    apt-get install auditbeat filebeat packetbeat -y -qq > /dev/null
+  elif command -v yum > /dev/null 2>&1; then
+    rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    cat >> /etc/yum.repos.d/elastic.repo << EOL
+[elastic-8.x]
+name=Elastic repository for 8.x packages
+baseurl=https://artifacts.elastic.co/packages/8.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+EOL
+    yum install auditbeat filebeat packetbeat -y -q > /dev/null
+  elif command -v zypper > /dev/null &2>1; then 
+    rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    cat >> /etc/zypp/repos.d/elastic.repo << EOL
+[elastic-8.x]
+name=Elastic repository for 8.x packages
+baseurl=https://artifacts.elastic.co/packages/8.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+EOL
+  zypper refresh > /dev/null
+  zypper --non-interactive install filebeat auditbeat packetbeat > /dev/null
   fi
 else
     apt-get install auditbeat filebeat packetbeat -y -qq
