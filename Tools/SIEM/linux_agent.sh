@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ "$(id -u)" -ne 0 ]; then
-  echo "Run this script as run (i.e. sudo sh linux_agent.sh)" 1>&2
+  echo "Run this script as root (i.e. sudo sh linux_agent.sh)" 1>&2
   exit 1
 fi
 
@@ -65,6 +65,9 @@ type=rpm-md
 EOL
     zypper refresh > /dev/null
     zypper --non-interactive install filebeat auditbeat packetbeat curl > /dev/null
+  else
+    sh archive_install.sh $ip $finger $pass $hostname
+    exit $?
   fi
 else
     apt-get install auditbeat filebeat packetbeat curl -y > /dev/null
