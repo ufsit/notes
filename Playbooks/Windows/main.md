@@ -21,7 +21,8 @@
     * User Configuration $\rightarrow$ Policies $\rightarrow$ Administrative Templatse $\rightarrow$ Control Panel $\rightarrow$ Prohibit Acess to Control Panel and Settings: Disabled
 * Find Users with Kerberos No Preauthentication
   * `Get-ADUser -Filter { DoesNotRequirePreAuth -eq $true } -Properties DoesNotRequirePreAuth | select SamAccountName, DoesNotRequirePreAuth`
-  * `Set-ADAccountControl - Identity "username" -TRUSTED_FOR_DELEGATION $true`
+  * To fix run ```Get-ADuser -Filer {DoesNotRequirePreAuth -eq $true} | ForEach-Object { Set-ADUser $_ -Replace @{DoesNotRequirePreAuth=$false} }```
+  * `Get-ADAccountControl - Identity "username" -TRUSTED_FOR_DELEGATION $true`
 * Reset Kerberos Creds
   * https://github.com/zjorz/Public-Ad-Scripts/blob/master/Reset-KrbTgt-Password-For-RWDCs-And-RODCs.ps1
 * Download AutoRuns from live.systernals.com
