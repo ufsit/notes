@@ -3,7 +3,7 @@ The order of doing these things is flexible
 All of these will be in the group policy editor  
 For most of these changes you should run ```gpupdate /force``` to make sure the changes take effect  
 *Note: atm this is local paths but some are different in domain policies*
-## Local Computer Policy -> Computer Configurations -> Windows Settings -> Security Settings -> Account Policies
+## Local Computer Policy $\rightarrow$ Computer Configurations $\rightarrow$ Windows Settings $\rightarrow$ Security Settings $\rightarrow$ Account Policies
 ### In Password Policy change:  
 * Enforce password history to 3-5 (just make sure it isn't **0**)
 * Set min password length to at least 8 characters
@@ -12,7 +12,7 @@ For most of these changes you should run ```gpupdate /force``` to make sure the 
 ### In Account Lockout Policy
 * Set lockout threshold to at least 2-3
 * Change the other two settings accordingly
-## Local Computer Policy -> Computer Configurations -> Windows Settings -> Security Settings -> Local Policies
+## Local Computer Policy $\rightarrow$ Computer Configurations $\rightarrow$ Windows Settings $\rightarrow$ Security Settings $\rightarrow$ Local Policies
 ### Audit Policy
 We will be auditing things in other places, however, if logs are not being generated start turning things on here  
 ### User Rights Assignment
@@ -57,7 +57,7 @@ Here you can choose who can access the machine which can be changed on a competi
 * Audit Logoff: **Success**
 * Audit other Logon/Logoff Events: **Success and Failure**
 
-## Computer Congifuration -> Administrative Templates -> System -> Kerberos
+## Computer Congifuration $\rightarrow$ Administrative Templates $\rightarrow$ System $\rightarrow$ Kerberos
 * Alwyas send compound authentication first: **Enabled**
 * Require strict target SPN match on remote procedure calls: **Enabled**
 * Require strict KDC validation: **Enabled**
