@@ -65,6 +65,70 @@ type=rpm-md
 EOL
     zypper refresh > /dev/null
     zypper --non-interactive install filebeat auditbeat packetbeat curl > /dev/null
+  elif command -v apk > /dev/null 2>&1; then
+    apk update > /dev/null 2>&1 && apk add curl > /dev/null 2>&1
+    curl -L -O -s https://github.com/ufsit/shreksophone1/raw/refs/heads/main/alpine-beats.tar.gz
+    tar xzf alpine-beats.tar.gz
+    rm alpine-beats.tar.gz
+    for beat in auditbeat filebeat packetbeat; do
+      mv $beat /usr/bin
+      curl -L -O -s https://artifacts.elastic.co/downloads/beats/$beat/$beat-8.19.6-linux-x86_64.tar.gz
+      tar xzf $beat-8.19.6-linux-x86_64.tar.gz
+      rm $beat-8.19.6-linux-x86_64.tar.gz
+      mv $beat-8.19.6-linux-x86_64 /etc/$beat
+      rm /etc/$beat/$beat
+      sed -i "s/\${path.config}/\/etc\/$beat/g" /etc/$beat/$beat.yml
+      cat >> /etc/init.d/$beat << EOL
+#!/sbin/openrc-run
+
+description="Elastic $beat service"
+
+command="/usr/bin/$beat"
+command_args="-c /etc/$beat/$beat.yml"
+pidfile="/run/$beat.pid"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    checkpath --directory --owner root:root --mode 755 /etc/$beat/logs
+    checkpath --directory --owner root:root --mode 755 /etc/$beat/data
+}
+
+start() {
+    ebegin "Starting $beat"
+    start-stop-daemon --start --exec "\$command" --pidfile "\$pidfile" \
+        --background --make-pidfile -- \
+        \$command_args
+    eend \$?
+}
+
+stop() {
+    ebegin "Stopping $beat"
+    start-stop-daemon --stop --pidfile "\$pidfile" --retry 5
+    eend \$?
+}
+
+restart() {
+    ebegin "Restarting $beat"
+    if [ -f "\$pidfile" ]; then
+        start-stop-daemon --stop --pidfile "\$pidfile" --retry 5
+        sleep 1
+    fi
+
+    start-stop-daemon --start --exec "\$command" --pidfile "\$pidfile" \
+        --background --make-pidfile -- \
+        \$command_args
+    eend \$?
+}
+EOL
+      chmod +x /etc/init.d/$beat
+      rc-update add $beat default
+    done
+    sed -i '50,77 d' /etc/auditbeat/auditbeat.yml
+    rm -rf logs data
   else
     sh archive_install.sh $ip $finger $pass $hostname
     exit $?
@@ -93,7 +157,7 @@ key=$(echo "$result" | awk -F'"' '/api_key/{print $4}')
 api_key="$id:$key"
 
 for beat in auditbeat filebeat packetbeat; do
-  $beat setup -E setup.kibana.host="http://$ip:5601" -E setup.kibana.username="elastic" -E setup.kibana.password="$pass" -E output.elasticsearch.hosts="[\"https://$ip:9200\"]" -E output.elasticsearch.username="elastic" -E output.elasticsearch.password="$pass" -E output.elasticsearch.ssl.enabled="true" -E output.elasticsearch.ssl.ca_trusted_fingerprint="$finger"
+  $beat setup -E setup.kibana.host="http://$ip:5601" -E setup.kibana.username="elastic" -E setup.kibana.password="$pass" -E output.elasticsearch.hosts="[\"https://$ip:9200\"]" -E output.elasticsearch.username="elastic" -E output.elasticsearch.password="$pass" -E output.elasticsearch.ssl.enabled="true" -E output.elasticsearch.ssl.ca_trusted_fingerprint="$finger" -c /etc/$beat/$beat.yml --path.home "/etc/$beat/"
 done
 
 for beat in auditbeat filebeat packetbeat; do
@@ -126,11 +190,11 @@ processors:
 EOL
 for beat in auditbeat filebeat packetbeat; do
   sed -i 's/hosts: \["localhost/# hosts: \["localhost/g' /etc/$beat/$beat.yml
-  $beat test config > /dev/null
+  $beat test config -c /etc/$beat/$beat.yml > /dev/null
   if [ $? -ne 0 ]; then
     printf "Check /etc/$beat/$beat.yml\n"
   fi
-  $beat test output > /dev/null
+  $beat test output -c /etc/$beat/$beat.yml > /dev/null
   if [ $? -ne 0 ]; then
     printf "Output test failed for $beat\n"
   fi
@@ -144,6 +208,10 @@ if command -v systemctl > /dev/null 2>&1; then
   if [ $(auditbeat show audit-rules | wc -l) -eq 1 ]; then
     systemctl restart auditbeat
   fi
+elif command -v service > /dev/null 2>&1; then
+  for beat in auditbeat filebeat packetbeat; do
+    service $beat start
+  done
 fi
 
 printf "Success!\n"
