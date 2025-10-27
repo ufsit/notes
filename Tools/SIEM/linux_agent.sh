@@ -65,6 +65,66 @@ type=rpm-md
 EOL
     zypper refresh > /dev/null
     zypper --non-interactive install filebeat auditbeat packetbeat curl > /dev/null
+  elif command -v apk > /dev/null 2>&1; then
+    apk update > /dev/null 2>1 && apk add curl > /dev/null 2>1
+    curl -L -O -s https://github.com/ufsit/shreksophone1/raw/refs/heads/main/alpine-beats.tar.gz
+    tar xzf alpine-beats.tar.gz
+    rm alpine-beats.tar.gz
+    for beat in auditbeat filebeat packetbeat; do
+      mv $beat /usr/bin
+      curl -L -O -s https://artifacts.elastic.co/downloads/beats/$beat/$beat-8.19.6-linux-x86_64.tar.gz
+      tar xzf $beat-8.19.6-linux-x86_64.tar.gz
+      mv $beat-8.19.6-linux-x86_64 /etc/$beat
+      rm /etc/$beat/$beat
+      sed -i "s/\$\\\{path.config}/\/etc\/$beat/g" /etc/$beat/$beat.yml
+      cat >> /etc/init.d/$beat << EOL
+#!/sbin/openrc-run
+
+description="Elastic $beat service"
+
+command="/usr/bin/$beat"
+command_args="-c /etc/$beat/$beat.yml"
+pidfile="/run/$beat.pid"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    checkpath --directory --owner root:root --mode 755 /etc/$beat/logs
+    checkpath --directory --owner root:root --mode 755 /etc/$beat/data
+}
+
+start() {
+    ebegin "Starting $beat"
+    start-stop-daemon --start --exec "\$command" --pidfile "\$pidfile" \
+        --background --make-pidfile -- \
+        \$command_args
+    eend \$?
+}
+
+stop() {
+    ebegin "Stopping $beat"
+    start-stop-daemon --stop --pidfile "\$pidfile" --retry 5
+    eend \$?
+}
+
+restart() {
+    ebegin "Restarting $beat"
+    if [ -f "\$pidfile" ]; then
+        start-stop-daemon --stop --pidfile "\$pidfile" --retry 5
+        sleep 1
+    fi
+
+    start-stop-daemon --start --exec "\$command" --pidfile "\$pidfile" \
+        --background --make-pidfile -- \
+        \$command_args
+    eend \$?
+}
+EOL
+      rc-update add $beat default
+    done
   else
     sh archive_install.sh $ip $finger $pass $hostname
     exit $?
@@ -144,6 +204,10 @@ if command -v systemctl > /dev/null 2>&1; then
   if [ $(auditbeat show audit-rules | wc -l) -eq 1 ]; then
     systemctl restart auditbeat
   fi
+elif command -v service > /dev/null 2>&1; then
+  for beat in auditbeat filebeat packetbeat; do
+    service $beat start
+  done
 fi
 
 printf "Success!\n"
