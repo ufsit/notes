@@ -57,7 +57,10 @@ Here you can choose who can access the machine which can be changed on a competi
 * Audit Logoff: **Success**
 * Audit other Logon/Logoff Events: **Success and Failure**
 
-## Computer Congifuration $\rightarrow$ Administrative Templates $\rightarrow$ System $\rightarrow$ Kerberos
+## Computer Congifuration $\rightarrow$ Administrative Templates $\rightarrow$ System
+### Keboros
 * Alwyas send compound authentication first: **Enabled**
 * Require strict target SPN match on remote procedure calls: **Enabled**
 * Require strict KDC validation: **Enabled**
+### Audit Process Creation
+* Include command line in process creation events: **Enabled**
