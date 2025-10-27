@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ "$(id -u)" -ne 0 ]; then
-  echo "Run this script as run (i.e. sudo sh linux_agent.sh)" 1>&2
+  echo "Run this script as root (i.e. sudo sh linux_agent.sh)" 1>&2
   exit 1
 fi
 
@@ -32,7 +32,7 @@ if [ $# -lt 3 ]; then
       printf "Installing dependancies..."
       printf "\n"
       wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg > /dev/null
-      apt-get install apt-transport-https -y > /dev/null
+      apt-get install apt-transport-https curl -y > /dev/null
       echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | tee /etc/apt/sources.list.d/elastic-8.x.list > /dev/null
       apt-get update -y > /dev/null
     fi
@@ -50,8 +50,8 @@ enabled=1
 autorefresh=1
 type=rpm-md
 EOL
-    yum install auditbeat filebeat packetbeat -y -q > /dev/null
-  elif command -v zypper > /dev/null &2>1; then 
+    yum install auditbeat filebeat packetbeat curl -y -q > /dev/null
+  elif command -v zypper > /dev/null 2>&1; then 
     rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
     cat >> /etc/zypp/repos.d/elastic.repo << EOL
 [elastic-8.x]
@@ -63,11 +63,14 @@ enabled=1
 autorefresh=1
 type=rpm-md
 EOL
-  zypper refresh > /dev/null
-  zypper --non-interactive install filebeat auditbeat packetbeat > /dev/null
+    zypper refresh > /dev/null
+    zypper --non-interactive install filebeat auditbeat packetbeat curl > /dev/null
+  else
+    sh archive_install.sh $ip $finger $pass $hostname
+    exit $?
   fi
 else
-    apt-get install auditbeat filebeat packetbeat -y -qq
+    apt-get install auditbeat filebeat packetbeat curl -y > /dev/null
 fi
 result=$(curl -k -u elastic:$pass -X POST "https://$ip:9200/_security/api_key?pretty" -H 'Content-Type: application/json' -d"
 {
