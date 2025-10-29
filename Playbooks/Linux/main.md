@@ -137,7 +137,15 @@
 * *script - coming soon*
 
 # opensnitch
+* an application firewall, requires a GUI
+```shell
+https://github.com/evilsocket/opensnitch/releases
 
+sudo apt install ./opensnitch-*.deb
+sudo yum localinstall ./opensnitch-*.rpm
+
+Open the GUI
+```
 
 # sysdig
 * see exactly what users are running
@@ -154,14 +162,47 @@
   * `curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh | sh > linpeas.out`
 
 ## ClamAV
+* Install
+```shell
+sudo apt install clamav clamav-daemon
+sudo systemctl restart clamav-daemon.service
 
 
+sudo zypper install -y clamav
+sudo systemctl restart clamav-daemon.service
+
+sudo dnf install -y epel-release clamav clamd clamav-update
+sudo systemctl restart clamav-daemon.service
+
+sudp pkg install clamav
+```
+* Usage
+```shell
+sudo clamscan -r / # full system scan, very intensive
+```
 ## Lynis
+```shell
+sudo git clone https://github.com/CISOfy/lynis
+cd lynis && sudo ./lynis audit system
+```
 
+## Rootkits
+### rkhunter
+```shell
+wget https://downloads.sourceforge.net/project/rkhunter/rkhunter/1.4.6/rkhunter-1.4.6.tar.gz
+tar -xzf rkhunter-1.4.6.tar.gz
+cd rkhunter-1.4.6
+sudo ./installer.sh --layout default --install
+sudo rkhunter --version
+sudo rkhunter --check --sk --report-warnings-only
+```
+* A log is provided for the results for later use
 
-## rkhunter
-
-
-## chkrootkit
+### chkrootkit
+* `make` and `gcc` required
+```shell
+git clone https://github.com/Magentron/chkrootkit.git
+cd chkrootkit && make sense && sudo ./chkrootkit | grep INFECTED
+```
 
 
