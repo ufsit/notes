@@ -35,4 +35,4 @@ if [ "$answer" = "y" ]; then
 fi
 
 #This script reads from a file as input and adds every user in this file as an allowed user for ssh
-#Example: sudo sh SSHAllowedUsers.sh names.txt
+#Example: sudo sh ssh_allowed_users.sh names.txt
