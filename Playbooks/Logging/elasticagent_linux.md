@@ -9,6 +9,7 @@ This script has been tested on:
 - Fedora 30
 - Debian 9
 - openSuse Leap 16
+- Alpine 3.10.9
 
 You can find the script [here](/Tools/SIEM/linux_agent.sh)
 
@@ -58,6 +59,24 @@ EOL
 ```
 3. `sudo zypper --non-interactive install auditbeat filebeat packetbeat curl`
 
+### Alpine (apk package manager)
+1. `apk update && apk add curl wget`
+2. `curl -O -L  https://github.com/ufsit/shreksophone1/raw/refs/heads/main/alpine-beats.tar.gz`
+3. `tar zxf alpine-beats.tar.gz && rm alpine-beat.tar.gz`
+4. **For every beat (auditbeat, filebeat, packetbeat)** complete the following steps:
+    1. `mv <beat> /usr/bin`
+    2. `curl -L -O https://artifacts.elastic.co/downloads/beats/<beat>/<beat>-8.19.6-linux-x86_64.tar.gz`
+    3. `tar xzf <beat>-8.19.6-linux-x86_64.tar.gz && rm <beat>-8.19.6-linux-x86_64.tar.gz`
+    4. `mv <beat>-8.19.6-linux-x86_64 /etc/<beat>`
+    5. `rm /etc/<beat>/<beat>`
+    6. `sed -i "s/\${path.config}/\/etc\/<beat>/g" /etc/<beat>/<beat>.yml`
+    7. Add our open-rc service template for every beat into `/etc/init.d/<beat>`
+    8. `chmod +x /etc/init.d/<beat>`
+    9. `rc-update add <beat> default`
+5. Remove lines 50-77 from the auditbeat.yml config file
+6. Whenever you see `systemctl enable --now <beat>` later, replace it with `service <beat> start`.
+
+
 ## Configuring
 Run this command to get an api key[^7]:
 ```
@@ -78,6 +97,7 @@ curl -k -X POST -u elastic:<password> "https://<server_ip>:9200/_security/api_ke
 }
 '
 ```
+The api key you want to save for later is "id:key"
 ### Auditbeat [^2]
 1. Edit `/etc/auditbeat/auditbeat.yml` and find the section `output.elasticsearch:` and replace it with:
 ```
@@ -89,11 +109,36 @@ output.elasticsearch:
     enabled: true
     ca_trusted_fingerprint: "<ca_fingerprint>"
 ```
-2. Run `sudo auditbeat test output` to test our configurations
-3. Place our auditd rules into `/etc/auditbeat/audit.rules.d/rules.conf` [^3]
-4. `sudo systemctl daemon-reload && sudo systemctl enable auditbeat --now`
-5. Run `sudo auditbeat show audit-rules` to make sure the rules were loaded properly
-6. If you don't see any rules run `sudo systemctl restart auditbeat` and check again
+2. Place this at the end of `/etc/auditbeat/auditbeat.yml` to filter out audit logs created by the beats:
+```
+processors:
+  - drop_event:
+      when:
+        or:
+          - and:
+            - equals:
+                destination.ip: '192.168.1.90'
+            - or:
+              - equals:
+                  destination.port: 9200
+              - equals:
+                  destination.port: 5601
+          - equals:
+              process.name: 'packetbeat'
+          - equals:
+              process.name: 'auditbeat'
+          - equals:
+              process.name: 'filebeat'
+          - equals:
+              destination.ip 127.0.0.1
+          - equals:
+              destination.ip: 127.0.0.53
+```
+3. Run `sudo auditbeat test output` to test our configurations
+4. Place our auditd rules into `/etc/auditbeat/audit.rules.d/rules.conf` [^3]
+5. `sudo systemctl daemon-reload && sudo systemctl enable auditbeat --now`
+6. Run `sudo auditbeat show audit-rules` to make sure the rules were loaded properly
+7. If you don't see any rules run `sudo systemctl restart auditbeat` and check again
 
 **TODO: Add security rules for alerting and detection**
 ### Filebeat [^4]
@@ -104,6 +149,7 @@ output.elasticsearch:
 5. If there is an unsupported service, edit `/etc/filebeat/filebeat.yml` and at `paths:` under `filebeat.inputs:` add the log path for the service to monitor
 6. Run `sudo filebeat test output` and `sudo filebeat test config` to make sure everything is valid
 7. `sudo systemctl daemon-reload && sudo systemctl enable filebeat --now`
+
 **Service logs are now forwarded to the ELK server**
 ### Packetbeat[^5]
 1. Repeat step 2 from Auditbeat in the file `/etc/packetbeat/packetbeat.yml` and don't touch the `pipeline` variable
@@ -135,9 +181,6 @@ processors:
 8. In the dashboard go to Stack Management -> Data Views and check if `packetbeat-*` exists. If it does, you are done
 9. Otherwise, click Create data view and give it the name and index pattern `packetbeat-*` and click save
 **TODO: Look into alerting on specific packet patterns**
-
-## Redhat (yum or dnf package manager)
-1. 
 
 **TODO: Figure out setting up and configuring on Windows/Other Linux-like systems**
 

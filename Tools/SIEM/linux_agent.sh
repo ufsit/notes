@@ -188,6 +188,31 @@ processors:
             - equals:
                 network.transport: 'ipv6-icmp'
 EOL
+
+cat >> /etc/auditbeat/auditbeat.yml << EOL
+processors:
+  - drop_event:
+      when:
+        or:
+          - and:
+            - equals:
+                destination.ip: '192.168.1.90'
+            - or:
+              - equals:
+                  destination.port: 9200
+              - equals:
+                  destination.port: 5601
+          - equals:
+              process.name: 'packetbeat'
+          - equals:
+              process.name: 'auditbeat'
+          - equals:
+              process.name: 'filebeat'
+          - equals:
+              destination.ip 127.0.0.1
+          - equals:
+              destination.ip: 127.0.0.53
+EOL
 for beat in auditbeat filebeat packetbeat; do
   sed -i 's/hosts: \["localhost/# hosts: \["localhost/g' /etc/$beat/$beat.yml
   $beat test config -c /etc/$beat/$beat.yml > /dev/null
