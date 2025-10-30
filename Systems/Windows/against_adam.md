@@ -69,5 +69,21 @@ Add-ADFineGrainedPasswordPolicySubject -Identity "ServiceAccountPolicy" -Subject
 ```
 ### AS-REP Roasting
 * Turn on requiring pre-auth for keberos
+## Coercion & Relay Attacks
+### Coercion Attacks
+* Disable NTLM
+* Turn on SMB signing
+  * Microsoft network server: Digitally sign communications (always) — Enabled.
+  * Microsoft network client: Digitally sign communications (if server agrees) — Enabled
+### Relay & Hash Capture
+* Turn on SMB signing
+* Disable NTLM
+* Also test out:
+  * Computer Configuration → Administrative Templates → Network → DNS Client → Turn off multicast name resolution = Enabled
+## noPAC
+* Check who can create system accounts, need more testing and looking into to get a concrete plan for this
+## PrintNightmare
+* Easiest way is to disable the Spooler service using Stop-Service
+* Computer Configuration → Administrative Templates → Printers → Allow Print Spooler to accept client connections = Disabled
 ## Sticky Keys
 * Open Settings → Go to Accessibility (Windows 11) or Ease of Access (Windows 10) → Keyboard → Under Sticky keys, toggle Off → ALSO turn off any boxes for shortcuts like “Allow the shortcut key to start Sticky Keys”
