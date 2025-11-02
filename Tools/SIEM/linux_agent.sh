@@ -37,7 +37,7 @@ if [ $# -lt 3 ]; then
       apt-get update -y > /dev/null
     fi
     printf "\nInstalling beats...\n"
-    apt-get install auditbeat filebeat packetbeat -y -qq > /dev/null
+    apt-get install auditbeat filebeat packetbeat curl -y -qq > /dev/null
   elif command -v yum > /dev/null 2>&1; then
     rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
     cat >> /etc/yum.repos.d/elastic.repo << EOL
@@ -188,6 +188,34 @@ processors:
             - equals:
                 network.transport: 'ipv6-icmp'
 EOL
+
+cat >> /etc/auditbeat/auditbeat.yml << EOL
+processors:
+  - drop_event:
+      when:
+        or:
+          - and:
+            - equals:
+                destination.ip: '192.168.1.90'
+            - or:
+              - equals:
+                  destination.port: 9200
+              - equals:
+                  destination.port: 5601
+          - equals:
+              process.name: 'packetbeat'
+          - equals:
+              process.name: 'auditbeat'
+          - equals:
+              process.name: 'filebeat'
+          - equals:
+              destination.ip 127.0.0.1
+          - equals:
+              destination.ip: 127.0.0.53
+EOL
+
+sed -i "s/\/usr\/sbin/\/usr\/sbin\n  - \/etc\n  - \/tmp\n  - \/var\/tmp\n  recursive: true\n  exclude_files:\n  - '\.sw.$'\n  - '\.swpx$'\n  - '~$'\n  - '\/\#.*\#$'\n  - '\\.save$'/g" /etc/auditbeat/auditbeat.yml
+
 for beat in auditbeat filebeat packetbeat; do
   sed -i 's/hosts: \["localhost/# hosts: \["localhost/g' /etc/$beat/$beat.yml
   $beat test config -c /etc/$beat/$beat.yml > /dev/null
