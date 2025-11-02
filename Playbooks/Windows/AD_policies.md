@@ -45,7 +45,7 @@ Here you can choose who can access the machine which can be changed on a competi
 * Network security: Force logoff when logon hours expire: **Enabled**
 * Network security: LAN Manager authentication level: **Send NTLMv2 response only. Refuse LM & NTLM**
 * Network Security: LDAP client signing requirements: **Require signing**
-* Network security: Restrict NTLM: Incoming/Outgoing NTLM traffic: **Deny all** (make sure none of your serrvices are legacy services that require NTLM if they do audit instead)
+* Network security: Restrict NTLM: Incoming/Outgoing NTLM traffic: **Deny all** (make sure none of your serrvices are legacy services that require NTLM if they do audit instead) **(audit in most competitions as services will most likely require NTLM)**
 * Recovery console: Allow automatic administrative logon: **Disabled**
 * System objects: Strengthen default permissions of internal system objects (e.g., Symbolic Links): **Enabled**
 * User Account Control: Detect application installations and prompt for elevation: **Enabled**
