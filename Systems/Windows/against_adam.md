@@ -87,3 +87,6 @@ Add-ADFineGrainedPasswordPolicySubject -Identity "ServiceAccountPolicy" -Subject
 * Computer Configuration → Administrative Templates → Printers → Allow Print Spooler to accept client connections = Disabled
 ## Sticky Keys
 * Open Settings → Go to Accessibility (Windows 11) or Ease of Access (Windows 10) → Keyboard → Under Sticky keys, toggle Off → ALSO turn off any boxes for shortcuts like “Allow the shortcut key to start Sticky Keys”
+* Make sure Utilman.exe is the correct executalbe and not something like powershell.exe. Simply running it should suffice. Check the registry key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\sethc.exe
+## Mimikatz
+* check event 4688 and grep for ```mimikatz```
