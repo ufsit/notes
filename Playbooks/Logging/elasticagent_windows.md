@@ -37,7 +37,7 @@ $password = ConvertTo-SecureString '<password>' -AsPlainText -Force;
 
 $credential = New-Object System.Management.Automation.PSCredential($username, $password);
 
-$response = Invoke-WebRequest -Uri "https://<server_ip>:9200/_security/api_key?pretty" -Method Post -Credential $credential -ContentType "application/json" -Body "`n{`n  `"name`": `"windows2012`", `n  `"role_descriptors`": {`n    `"winlogbeat_writer`": { `n      `"cluster`": [`"monitor`", `"read_ilm`", `"read_pipeline`"],`n      `"index`": [`n        {`n          `"names`": [`"winlogbeat-*`"],`n          `"privileges`": [`"view_index_metadata`", `"create_doc`", `"auto_configure`"]`n        }`n      ]`n    }`n  }`n}`n" | convertfrom-json;
+$response = Invoke-WebRequest -Uri "https://<server_ip>:9200/_security/api_key?pretty" -Method Post -Credential $credential -ContentType "application/json" -Body "`n{`n  `"name`": `"<hostname>`", `n  `"role_descriptors`": {`n    `"winlogbeat_writer`": { `n      `"cluster`": [`"monitor`", `"read_ilm`", `"read_pipeline`"],`n      `"index`": [`n        {`n          `"names`": [`"winlogbeat-*`"],`n          `"privileges`": [`"view_index_metadata`", `"create_doc`", `"auto_configure`"]`n        }`n      ]`n    }`n  }`n}`n" | convertfrom-json;
 
 $response.id + ":" + $response.api_key
 ```
