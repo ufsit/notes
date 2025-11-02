@@ -52,7 +52,7 @@ api_key: <key from above>
      enabled: true
      ca_trusted_fingerprint: "{fingerprint given by server controller}"
 ```
-7. Make sure under *winbeat.event_logs* that Sysmon/Operational is here as a - name: param
+7. Make sure under *winbeat.event_logs* that Sysmon/Operational and GroupPolicy/Operational is here as a - name: param
 8. Under *Kibana* uncomment hosts and change to *hosts: "[server ip]:5601"*
 9. Test the yml with `.\winlogbeat.exe test config -c .\winlogbeat.yml -e`
 10. `.\winlogbeat.exe setup -e`
