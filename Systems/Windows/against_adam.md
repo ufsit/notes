@@ -2,6 +2,7 @@
 https://docs.google.com/presentation/d/1b4aMRHCkMAyvT-2Hnvr6GwgheSTolL4L5VN97oONhv8/edit?slide=id.g39df437c524_0_23#slide=id.g39df437c524_0_23
 ## Server Message Block (SMB) - Password Attacks
 ### Null Session & Anonymous login
+* If possible disable netlogon and make sure only you turn it back on
 * Local Computer Policy, navigate to Computer Configuration\Administrative Templates\Network\Lanman Workstation  
   * **Disable** insecure guest logons  
 * Go to Turn Windows features on or off
