@@ -33,6 +33,12 @@
 * Disable SPNs for users
   * `setspn -I <computer_name>`: list SPNs
   * `setspn -d service/name hostname`
+* Change the krbtgt password
+  * Open Active Directory Users and Computers. You can find this in Administrative Tools or by running dsa.msc.
+  * Go to View and select Advanced Features if it's not already enabled.
+  * In the console tree, double-click the domain container, then select Users.
+  * Right-click the krbtgt account and select Reset Password.
+  * Enter a new strong password, re-enter it to confirm, and click OK
 # Windows Emergency Sheet
 > **WARNING**: The following are likely to break things
 
