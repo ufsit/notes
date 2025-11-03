@@ -70,6 +70,16 @@ Add-ADFineGrainedPasswordPolicySubject -Identity "ServiceAccountPolicy" -Subject
 ```
 ### AS-REP Roasting
 * Turn on requiring pre-auth for keberos
+### Golden Ticket
+* Monitor anomalous Kerberos ticket activity
+  * For example, watch out for tickets with unusually long lifespans or tickets that grant unexpected privileges.
+* Audit Active Directory and system logs
+  * Unexpected privilege escalations
+  * Token manipulations
+  * Local Security Authority Subsystem Service (LSASS) memory reads
+ * Implement Credential Guard (modern systems only)
+ * Manage the KRBTGT account password
+   * Change the password twice in a row to remove it from memory as well invalidating golden tickets
 ## Coercion & Relay Attacks
 ### Coercion Attacks
 * Disable NTLM
@@ -91,3 +101,18 @@ Add-ADFineGrainedPasswordPolicySubject -Identity "ServiceAccountPolicy" -Subject
 * Make sure Utilman.exe is the correct executalbe and not something like powershell.exe. Simply running it should suffice. Check the registry key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\sethc.exe
 ## Mimikatz
 * check event 4688 and grep for ```mimikatz```
+## Signature Validation breaking
+* Go to ```HKEY_LOCAL_MACHINE\Software\Microsoft\Cryptography\Wintrust\Config``` or ```HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Cryptography\Wintrust\Config``` (64 bit)
+  * Look for ```EnableCertPaddingCheck``` and either delete it or set it to **1**
+## Getting Defender back up (still needs more looking into)
+* Find ```DisableAntiSpyware``` and set it to **1** (most likely won't do much but its a start)
+* Run ```sfc /scannow``` and restart if needed
+## Unauth VNC
+* If VNC is not needed block it on the firewall
+* In ```HKEY_LOCAL_MACHINE\SOFTWARE\RealVNC\vncserver``` or ```HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\RealVNC\vncserver``` (64 bit)
+  * Authentication: should not be **None**
+  * AuthRequired: **1**
+  * Delete PasswordViewOnly if present (if VNC view only is ok to not have)
+  * Password: should be non empty
+    * Change it with ```"C:\Program Files\RealVNC\VNC Server\vncserver.exe" -service -passwd``` or using the GUI
+ * Enable encryption (TLS) in the VNC server options if possible
