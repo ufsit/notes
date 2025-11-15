@@ -3,7 +3,7 @@
 * Server Message Block (SMB) is a client-server protocol that regulates access to files and entire directories and other network resouces such as printers, routers, or interfaces released for the newtork.
 * Mainly used on Windows, whose network services support SMB in a downward-compatible manner
 * `Samba` - a solution that enables the use of SMB in Linux and Unix distributions on this cross-platform communication via SMB.
-* SMB protocol enables th client to communicate with other participants int he same network to access files or services shared with it on the network
+* SMB protocol enables the client to communicate with other participants int he same network to access files or services shared with it on the network
   * both parties must establish a connection, which is why they first exchange corresponding messages
   * which is why in IP networks, SMB uses TCP
 * An SMB server can provide arbitrary parts of its local file system as shares
