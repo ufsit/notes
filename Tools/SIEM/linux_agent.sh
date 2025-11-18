@@ -196,7 +196,7 @@ processors:
         or:
           - and:
             - equals:
-                destination.ip: '192.168.1.90'
+                destination.ip: "$ip"
             - or:
               - equals:
                   destination.port: 9200
@@ -209,7 +209,7 @@ processors:
           - equals:
               process.name: 'filebeat'
           - equals:
-              destination.ip 127.0.0.1
+              destination.ip: 127.0.0.1
           - equals:
               destination.ip: 127.0.0.53
 EOL
