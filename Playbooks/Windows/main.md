@@ -1,7 +1,7 @@
 <!-- Inheritance from Alex Christy -->
 # Windows ASAP Tasks
 - Roll passwords (script link here)
-- Disable guest account and possibly the Administrator account if given another account that has the same perms
+- Disable guest account ```net user guest /active:no``` and possibly the Administrator account if given another account that has the same perms
 - RDP enabled on firewall
   - Windows Defender Firewall with Advanced Security $\rightarrow$ Inbound Rules
     * Use presets for RDP
@@ -21,7 +21,8 @@
     * User Configuration $\rightarrow$ Policies $\rightarrow$ Administrative Templatse $\rightarrow$ Control Panel $\rightarrow$ Prohibit Acess to Control Panel and Settings: Disabled
 * Find Users with Kerberos No Preauthentication
   * `Get-ADUser -Filter { DoesNotRequirePreAuth -eq $true } -Properties DoesNotRequirePreAuth | select SamAccountName, DoesNotRequirePreAuth`
-  * `Set-ADAccountControl - Identity "username" -TRUSTED_FOR_DELEGATION $true`
+  * To fix run ```Get-ADuser -Filter {DoesNotRequirePreAuth -eq $true} | ForEach-Object { Set-ADUser $_ -Replace @{DoesNotRequirePreAuth=$false} }```
+  * `Get-ADAccountControl - Identity "username" -TRUSTED_FOR_DELEGATION $true`
 * Reset Kerberos Creds
   * https://github.com/zjorz/Public-Ad-Scripts/blob/master/Reset-KrbTgt-Password-For-RWDCs-And-RODCs.ps1
 * Download AutoRuns from live.systernals.com
@@ -32,6 +33,12 @@
 * Disable SPNs for users
   * `setspn -I <computer_name>`: list SPNs
   * `setspn -d service/name hostname`
+* Change the krbtgt password
+  * Open Active Directory Users and Computers. You can find this in Administrative Tools or by running dsa.msc.
+  * Go to View and select Advanced Features if it's not already enabled.
+  * In the console tree, double-click the domain container, then select Users.
+  * Right-click the krbtgt account and select Reset Password.
+  * Enter a new strong password, re-enter it to confirm, and click OK
 # Windows Emergency Sheet
 > **WARNING**: The following are likely to break things
 

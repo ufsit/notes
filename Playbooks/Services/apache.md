@@ -4,7 +4,7 @@
 ServerTokens Prod
 ServerSignatuer Off
 ```
-* Disable directory listing, modify `.htaccess`
+* Disable directory listing, modify `.htaccess` (should be located inside the website root directory)
   * `Options -Indexes`
 * Force HTTPS use, redirect HTTP traffic
   * `Redirect "/" "https://<site_domain>/"`
