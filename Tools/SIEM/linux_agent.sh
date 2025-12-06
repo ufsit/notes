@@ -196,7 +196,7 @@ processors:
         or:
           - and:
             - equals:
-                destination.ip: '192.168.1.90'
+                destination.ip: "$ip"
             - or:
               - equals:
                   destination.port: 9200
@@ -209,12 +209,12 @@ processors:
           - equals:
               process.name: 'filebeat'
           - equals:
-              destination.ip 127.0.0.1
+              destination.ip: 127.0.0.1
           - equals:
               destination.ip: 127.0.0.53
 EOL
 
-sed -i "s/\/usr\/sbin/\/usr\/sbin\n  - \/etc\n  - \/tmp\n  - \/var\/tmp\n  recursive: true\n  exclude_files:\n  - '\.sw.$'\n  - '\.swpx$'\n  - '~$'\n  - '\/\#.*\#$'\n  - '\\.save$'/g" /etc/auditbeat/auditbeat.yml
+sed -i "s/\/usr\/sbin\n  - \/etc/\/usr\/sbin\n  - \/etc\n  - \/tmp\n  - \/var\/tmp\n  recursive: true\n  exclude_files:\n  - '\.sw.$'\n  - '\.swpx$'\n  - '~$'\n  - '\/\#.*\#$'\n  - '\\.save$'/g" /etc/auditbeat/auditbeat.yml
 
 for beat in auditbeat filebeat packetbeat; do
   sed -i 's/hosts: \["localhost/# hosts: \["localhost/g' /etc/$beat/$beat.yml
@@ -232,12 +232,12 @@ curl -q https://raw.githubusercontent.com/ufsit/shreksophone1/refs/heads/main/ru
 printf "Starting beats...\n"
 
 if command -v systemctl > /dev/null 2>&1; then
-  systemctl daemon-reload > /dev/null && systemctl enable --now auditbeat filebeat packetbeat > /dev/null
+  systemctl daemon-reload > /dev/null && systemctl enable --now auditbeat filebeat > /dev/null
   if [ $(auditbeat show audit-rules | wc -l) -eq 1 ]; then
     systemctl restart auditbeat
   fi
 elif command -v service > /dev/null 2>&1; then
-  for beat in auditbeat filebeat packetbeat; do
+  for beat in auditbeat filebeat; do
     service $beat start
   done
 fi
