@@ -1,10 +1,10 @@
-# --- Ensure running as Administrator ---
+# --- Ensure Administrator ---
 function Assert-Admin {
     try {
         $current = [Security.Principal.WindowsIdentity]::GetCurrent()
         $principal = New-Object Security.Principal.WindowsPrincipal($current)
         if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-            Write-Error "This script must be run as Administrator. Exiting."
+            Write-Error "This script must be run as Administrator."
             exit 1
         }
     } catch {
@@ -14,16 +14,7 @@ function Assert-Admin {
 }
 Assert-Admin
 
-# --- Configuration ---
-$downloadUrl = 'https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.19.6-windows-x86_64.zip'
-$tempDir = Join-Path $env:TEMP "winlogbeat_install_$(Get-Random)"
-$zipPath = Join-Path $tempDir 'winlogbeat.zip'
-$extractDir = Join-Path $tempDir 'extracted'
-$installDir = Join-Path $env:ProgramFiles 'Winlogbeat'   # final directory
-$argsFile = Join-Path (Get-Location) 'args.txt'         # expects args.txt in current directory
-$winlogbeatRootFromZip = $null                          # will be detected after extraction
-
-# --- Helpers ---
+# --- Helper functions ---
 function Fail([string]$msg) {
     Write-Error $msg
     exit 1
@@ -31,19 +22,37 @@ function Fail([string]$msg) {
 function Info([string]$msg) { Write-Host "[INFO] $msg" }
 function Debug([string]$msg) { Write-Host "[DEBUG] $msg" }
 
-# --- Prepare workspace ---
+# -------------------
+# CONFIG
+# -------------------
+$downloadUrl = 'https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.19.6-windows-x86_64.zip'
+$tempDir = Join-Path $env:TEMP "winlogbeat_install_$(Get-Random)"
+$zipPath = Join-Path $tempDir 'winlogbeat.zip'
+$extractDir = Join-Path $tempDir 'extracted'
+$installDir = Join-Path $env:ProgramFiles 'Winlogbeat'
+$argsFile = Join-Path (Get-Location) 'args.txt'
+$winlogbeatRootFromZip = $null
+
+# -------------------
+# Prepare temp dirs
+# -------------------
 try {
-    if (Test-Path $tempDir) { Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue }
+    if (Test-Path $tempDir) { Remove-Item -Force -Recurse $tempDir -ErrorAction SilentlyContinue }
     New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
     New-Item -ItemType Directory -Path $extractDir -Force | Out-Null
 } catch {
     Fail "Failed to create temporary directories: $_"
 }
 
-# --- Download (Invoke-WebRequest with no progress bar) ---
-Info "Downloading Winlogbeat from $downloadUrl to $zipPath (no progress shown)..."
+Info "Downloading Winlogbeat..."
 
-# Disable progress bar
+# Ensure TLS1.2 for compatibility with Elastic download servers
+try {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+} catch {
+    Write-Warning "Could not set TLS1.2; HTTPS download may fail."
+}
+
 $oldProgress = $ProgressPreference
 $ProgressPreference = 'SilentlyContinue'
 
@@ -54,161 +63,150 @@ try {
     Fail "Download failed: $_"
 }
 
-# Restore progress bar behavior
 $ProgressPreference = $oldProgress
 
 if (-not (Test-Path $zipPath)) {
-    Fail "Download did not produce a file at $zipPath"
+    Fail "Download did not produce a file."
 }
 
 Info "Download complete."
 
+# -------------------
+# Extract ZIP using Shell.Application (PS 3.0 compatible)
+# -------------------
+Info "Extracting ZIP..."
 
-# --- Extract using Shell.Application (old-friendly) ---
-Info "Extracting zip using Shell.Application..."
 try {
     $shell = New-Object -ComObject Shell.Application
-    $zipFolder = $shell.NameSpace($zipPath)
-    if (-not $zipFolder) { Fail "Could not open ZIP file for extraction." }
-    $targetFolder = $shell.NameSpace($extractDir)
-    if (-not $targetFolder) { Fail "Could not prepare extraction target folder." }
-    # CopyHere may trigger UI in some contexts; use flags to suppress prompts (4+16 = no progress UI + respond Yes to All)
-    $flags = 0x14
-    $targetFolder.CopyHere($zipFolder.Items(), $flags)
-    # Wait for files to appear (simple polling)
+    $zip = $shell.NameSpace($zipPath)
+    $dest = $shell.NameSpace($extractDir)
+
+    if (-not $zip -or -not $dest) { Fail "Could not extract ZIP." }
+
+    $dest.CopyHere($zip.Items(), 0x14)
+
     $maxWait = 30
-    $waited = 0
-    while (($null -eq (Get-ChildItem -Path $extractDir -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1)) -and ($waited -lt $maxWait)) {
+    $elapsed = 0
+    while ($elapsed -lt $maxWait -and -not (Get-ChildItem -Path $extractDir -Recurse | Select-Object -First 1)) {
         Start-Sleep -Seconds 1
-        $waited++
+        $elapsed++
     }
-    if ($waited -ge $maxWait) {
-        Fail "Extraction timed out or failed (no files found in $extractDir)."
-    }
+    if ($elapsed -ge $maxWait) { Fail "Extraction timed out." }
 } catch {
     Fail "Extraction failed: $_"
 }
+
 Info "Extraction complete."
 
-# Determine root folder from extracted contents (common pattern: winlogbeat-<version>-windows-x86_64)
+# Detect root folder
 try {
-    $children = Get-ChildItem -Path $extractDir -Force | Where-Object { $_.PSIsContainer } 
+    $children = Get-ChildItem -Path $extractDir | Where-Object { $_.PSIsContainer }
     if ($children.Count -eq 1) {
         $winlogbeatRootFromZip = $children[0].FullName
     } else {
-        # If multiple, attempt to find a folder starting with "winlogbeat"
-        $found = $children | Where-Object { $_.Name -match '^winlogbeat' } | Select-Object -First 1
-        if ($found) { $winlogbeatRootFromZip = $found.FullName } else {
-            # fallback to extractDir itself (some zips extract flat)
-            $winlogbeatRootFromZip = $extractDir
-        }
+        $match = $children | Where-Object { $_.Name -match '^winlogbeat' } | Select-Object -First 1
+        if ($match) { $winlogbeatRootFromZip = $match.FullName }
+        else { $winlogbeatRootFromZip = $extractDir }
     }
-    if (-not (Test-Path $winlogbeatRootFromZip)) { Fail "Could not determine extracted Winlogbeat root folder." }
 } catch {
-    Fail "Error identifying extracted root folder: $_"
+    Fail "Could not determine extracted folder: $_"
 }
-Debug "Detected winlogbeat root: $winlogbeatRootFromZip"
 
-# --- Move to Program Files and rename to Winlogbeat ---
-Info "Moving extracted files to $installDir ..."
+Debug "Extracted root: ${winlogbeatRootFromZip}"
+
+# -------------------
+# Move to Program Files\Winlogbeat
+# -------------------
+Info "Installing to ${installDir} ..."
+
 try {
     if (Test-Path $installDir) {
-        Info "Existing $installDir found. Attempting to remove it first."
-        try {
-            Stop-Service -Name 'winlogbeat' -ErrorAction SilentlyContinue
-        } catch { }
-        Remove-Item -Path $installDir -Recurse -Force -ErrorAction SilentlyContinue
+        Info "Removing existing directory."
+        Stop-Service winlogbeat -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force $installDir -ErrorAction SilentlyContinue
     }
-    # Use Move-Item where possible; if Move fails across volumes, copy then remove
+
     try {
-        Move-Item -Path $winlogbeatRootFromZip -Destination $installDir -Force -ErrorAction Stop
+        Move-Item $winlogbeatRootFromZip $installDir -Force -ErrorAction Stop
     } catch {
-        Info "Move-Item failed, fallback to Copy-Item then remove source: $_"
-        Copy-Item -Path (Join-Path $winlogbeatRootFromZip '*') -Destination $installDir -Recurse -Force -ErrorAction Stop
-        Remove-Item -Path $winlogbeatRootFromZip -Recurse -Force -ErrorAction SilentlyContinue
+        Info "Move failed; copying instead."
+        Copy-Item (Join-Path $winlogbeatRootFromZip '*') $installDir -Recurse -Force
+        Remove-Item -Recurse -Force $winlogbeatRootFromZip -ErrorAction SilentlyContinue
     }
 } catch {
-    Fail "Failed to move install files to $installDir : $_"
+    Fail "Failed to install to ${installDir}: $_"
 }
-if (-not (Test-Path $installDir)) { Fail "Install directory $installDir does not exist after move." }
-Info "Files moved to $installDir."
 
-# --- Read args.txt ---
-Info "Reading arguments from $argsFile ..."
-if (-not (Test-Path $argsFile)) { Fail "Arguments file not found at $argsFile" }
+Info "Install complete."
+
+# -------------------
+# Read args.txt
+# -------------------
+Info "Reading args from args.txt ..."
+
+if (-not (Test-Path $argsFile)) { Fail "args.txt not found at ${argsFile}" }
+
 try {
-    $rawLines = Get-Content -Path $argsFile -ErrorAction Stop | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' -and -not $_.StartsWith('#') }
-    if ($rawLines.Count -eq 0) { Fail "args.txt is empty or contains only comments/blank lines." }
-
-    # Accept either key=value lines or positional lines
+    $raw = Get-Content $argsFile | ForEach-Object { $_.Trim() } |
+           Where-Object { $_ -ne '' -and -not $_.StartsWith('#') }
     $parsed = @{}
-    foreach ($line in $rawLines) {
+    foreach ($line in $raw) {
         if ($line -match '^\s*([^=]+)\s*=\s*(.+)$') {
-            $k = $matches[1].Trim().ToLower()
-            $v = $matches[2].Trim()
-            $parsed[$k] = $v
+            $parsed[$matches[1].Trim().ToLower()] = $matches[2].Trim()
         }
-    }
-    if ($parsed.Count -ge 4) {
-        # use keys if present
-        $ip = $parsed['ip']   ; $password = $parsed['password'] ; $fingerprint = $parsed['fingerprint'] ; $hostname = $parsed['hostname']
-    } else {
-        # fallback: positional order
-        if ($rawLines.Count -lt 4) { Fail "args.txt must contain at least 4 non-empty lines (ip, password, fingerprint, hostname) or key=value pairs." }
-        $ip = $rawLines[0]
-        $password = $rawLines[1]
-        $fingerprint = $rawLines[2]
-        $hostname = $rawLines[3]
     }
 
-    foreach ($name in @('ip','password','fingerprint','hostname')) {
-        if (-not (Get-Variable -Name $name -Scope 1 -ErrorAction SilentlyContinue)) {
-            Fail "Missing required argument: $name"
-        }
-        if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $name -ValueOnly -Scope 1))) {
-            Fail "Argument '$name' is empty."
-        }
+    if ($parsed.Count -ge 4) {
+        $ip          = $parsed['ip']
+        $password    = $parsed['password']
+        $fingerprint = $parsed['fingerprint']
+        $hostname    = $parsed['hostname']
+    } else {
+        if ($raw.Count -lt 4) { Fail "args.txt must contain 4 values." }
+        $ip          = $raw[0]
+        $password    = $raw[1]
+        $fingerprint = $raw[2]
+        $hostname    = $raw[3]
     }
 } catch {
-    Fail "Failed to parse args.txt: $_"
+    Fail "Could not parse args.txt: $_"
 }
-Info "Arguments loaded: ip=$ip, hostname=$hostname, fingerprint=(redacted), password=(redacted)"
 
-# --- Run install-service-winlogbeat.ps1 ---
+Info "Args loaded."
+
+# -------------------
+# Install-service-winlogbeat.ps1
+# -------------------
 $installScript = Join-Path $installDir 'install-service-winlogbeat.ps1'
 if (-not (Test-Path $installScript)) {
-    Fail "Installer script not found at $installScript"
+    Fail "install-service-winlogbeat.ps1 not found in ${installDir}"
 }
-Info "Running installer script: $installScript"
+
+Info "Running install-service-winlogbeat.ps1 ..."
 try {
-    # Change to install dir for relative paths
     Push-Location $installDir
-    # Bypass the execution policy for the script invocation only
     & $installScript
-    $exit = $LASTEXITCODE
     Pop-Location
-    if ($exit -ne 0) {
-        Write-Warning "Installer script returned exit code $exit. Continuing but verify installation."
-    }
 } catch {
-    Pop-Location -ErrorAction SilentlyContinue
-    Fail "Failed to run installer script: $_"
+    Pop-Location | Out-Null
+    Fail "Service install failed: $_"
 }
-Info "Installer script invoked."
 
-# --- Run winlogbeat.exe setup with substituted values ---
-$exePath = Join-Path $installDir 'winlogbeat.exe'
-if (-not (Test-Path $exePath)) { Fail "winlogbeat.exe not found at $exePath" }
+# -------------------
+# Run winlogbeat setup
+# -------------------
+$exe = Join-Path $installDir 'winlogbeat.exe'
+if (-not (Test-Path $exe)) { Fail "winlogbeat.exe not found in ${installDir}" }
 
-# Build argument list. We will set Kibana host to http://<ip>:5601 per your example.
-$kibanaHost = "http://$ip:5601"
-$esHostExpr = "['$ip:9200']"    # as in your example (note single quotes inside)
+$kibanaHost = "http://${ip}:5601"
+$hostsExpr = "['${ip}:9200']"
+
 $setupArgs = @(
     'setup',
     '-E', "setup.kibana.host=`"$kibanaHost`"",
     '-E', 'setup.kibana.username="elastic"',
     '-E', "setup.kibana.password=`"$password`"",
-    '-E', "output.elasticsearch.hosts=`"$esHostExpr`"",
+    '-E', "output.elasticsearch.hosts=`"$hostsExpr`"",
     '-E', 'output.elasticsearch.protocol="https"',
     '-E', 'output.elasticsearch.username="elastic"',
     '-E', "output.elasticsearch.password=`"$password`"",
@@ -216,27 +214,27 @@ $setupArgs = @(
     '-E', "output.elasticsearch.ssl.ca_trusted_fingerprint=`"$fingerprint`""
 )
 
-Info "Running winlogbeat setup (this may take a short while)..."
+Info "Running winlogbeat setup..."
+
 try {
     Push-Location $installDir
-    & $exePath @setupArgs
-    $setupExit = $LASTEXITCODE
+    & $exe @setupArgs
     Pop-Location
-    if ($setupExit -ne 0) {
-        Write-Warning "winlogbeat setup returned exit code $setupExit. Check output for details."
-    } else {
-        Info "winlogbeat setup completed successfully (exit code 0)."
-    }
 } catch {
-    Pop-Location -ErrorAction SilentlyContinue
-    Fail "Failed while running winlogbeat setup: $_"
+    Pop-Location | Out-Null
+    Fail "Setup failed: $_"
 }
 
-# --- Obtain API key from Elasticsearch ---
-Info "Requesting API key from Elasticsearch at https://$ip:9200 ..."
+# -------------------
+# Retrieve Elasticsearch API Key (robust)
+# -------------------
+Info "Retrieving API key from Elasticsearch at https://${ip}:9200 ..."
+
 try {
-    # Ensure TLS12 and trust invalid certs (per your snippet)
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    # Ensure TLS1.2
+    try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
+
+    # Trust all certs (keeps prior behavior; insecure on public networks)
     Add-Type @"
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -248,10 +246,12 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
 "@ -ErrorAction Stop
     [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
+    # Build credential
     $username = "elastic"
     $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
     $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
 
+    # Body as JSON
     $body = @"
 {
   "name": "$hostname",
@@ -269,87 +269,133 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
 }
 "@
 
-    # Use Invoke-WebRequest -Method Post -Credential ... -Body $body -ContentType 'application/json'
-    $uri = "https://$ip:9200/_security/api_key?pretty"
-    $invokeResponse = Invoke-WebRequest -Uri $uri -Method Post -Credential $credential -ContentType 'application/json' -Body $body -ErrorAction Stop
+    $uri = "https://${ip}:9200/_security/api_key?pretty"
 
-    # The response content should be JSON. Parse it.
-    $json = $invokeResponse.Content | ConvertFrom-Json
-    if (-not $json) { Fail "API key response could not be parsed as JSON." }
-    if ($json.id -and $json.api_key) {
-        $api_key = "$($json.id):$($json.api_key)"
-    } else {
-        # Some ES versions may nest the object; attempt to find fields
-        if ($json._id -and $json._api_key) {
-            $api_key = "$($json._id):$($json._api_key)"
+    # Prefer Invoke-RestMethod because it returns parsed JSON objects (available in PS3+)
+    $resp = $null
+    try {
+        $resp = Invoke-RestMethod -Uri $uri -Method Post -Credential $credential -ContentType 'application/json' -Body $body -ErrorAction Stop
+    } catch {
+        # Fallback to Invoke-WebRequest and try to parse content
+        $iw = Invoke-WebRequest -Uri $uri -Method Post -Credential $credential -ContentType 'application/json' -Body $body -ErrorAction Stop
+        if ($iw -and $iw.Content) {
+            try {
+                $resp = $iw.Content | ConvertFrom-Json
+            } catch {
+                $resp = $iw.Content
+            }
         } else {
-            Fail "Unable to locate id and api_key in response: $($invokeResponse.Content)"
+            throw $_
         }
     }
-    if (-not $api_key) { Fail "API key not retrieved or empty." }
-} catch {
-    Fail "Failed to get API key from Elasticsearch: $_"
-}
-Info "API key obtained (value redacted in logs)."
 
-# --- Append required settings to winlogbeat.yml ---
-$ymlPath = Join-Path $installDir 'winlogbeat.yml'
-if (-not (Test-Path $ymlPath)) {
-    # If file doesn't exist, create it (some packaging uses winlogbeat.yml.dist)
-    Write-Warning "winlogbeat.yml not found at $ymlPath. Creating new file."
-    New-Item -Path $ymlPath -ItemType File -Force | Out-Null
-}
+    # Defensive parsing: accept multiple possible shapes
+    $idVal = $null; $apiKeyVal = $null
 
-try {
-    $out1 = "output.elasticsearch.hosts: [""https://$ip:9200""]"
-    $out2 = "output.elasticsearch.api_key: `"$api_key`""
-    $out3 = "output.elasticsearch.ssl.enabled: true"
-    $out4 = "output.elasticsearch.ssl.ca_trusted_fingerprint: `"$fingerprint`""
+    if ($null -ne $resp) {
+        # If resp is already a PSCustomObject with properties
+        if ($resp -is [System.Management.Automation.PSCustomObject] -or $resp -is [hashtable]) {
+            if ($resp.PSObject.Properties.Name -contains 'id') { $idVal = $resp.id }
+            if ($resp.PSObject.Properties.Name -contains 'api_key') { $apiKeyVal = $resp.api_key }
 
-    # Use Out-File with -Append and UTF8 encoding (PowerShell 3 supports -Encoding)
-    $out1 | Out-File -FilePath $ymlPath -Append -Encoding UTF8
-    $out2 | Out-File -FilePath $ymlPath -Append -Encoding UTF8
-    $out3 | Out-File -FilePath $ymlPath -Append -Encoding UTF8
-    $out4 | Out-File -FilePath $ymlPath -Append -Encoding UTF8
-} catch {
-    Fail "Failed while appending settings to $ymlPath : $_"
-}
-Info "Configuration appended to $ymlPath."
+            # Some shapes might nest the api key under "api_key" object
+            if (-not $idVal -and $resp.api_key -and $resp.api_key.id) { $idVal = $resp.api_key.id }
+            if (-not $apiKeyVal -and $resp.api_key -and $resp.api_key.api_key) { $apiKeyVal = $resp.api_key.api_key }
 
-# --- Start the winlogbeat service ---
-Info "Attempting to start service 'winlogbeat'..."
-try {
-    Start-Service -Name 'winlogbeat' -ErrorAction Stop
-    Start-Sleep -Seconds 2
-    $svc = Get-Service -Name 'winlogbeat' -ErrorAction Stop
-    if ($svc.Status -ne 'Running') {
-        Write-Warning "Service 'winlogbeat' did not reach Running state. Current state: $($svc.Status)"
-    } else {
-        Info "Service 'winlogbeat' is running."
+            # Some responses may return _id/_api_key
+            if (-not $idVal -and $resp._id) { $idVal = $resp._id }
+            if (-not $apiKeyVal -and $resp._api_key) { $apiKeyVal = $resp._api_key }
+        } elseif ($resp -is [string]) {
+            # resp is a raw JSON string; try to convert
+            try {
+                $parsed = $resp | ConvertFrom-Json
+                if ($parsed) {
+                    if ($parsed.id) { $idVal = $parsed.id }
+                    if ($parsed.api_key) { $apiKeyVal = $parsed.api_key }
+                }
+            } catch {
+                # leave as-is
+            }
+        }
     }
+
+    # Validate
+    if ([string]::IsNullOrWhiteSpace($idVal) -or [string]::IsNullOrWhiteSpace($apiKeyVal)) {
+        # Provide diagnostic output to help debug (redact password)
+        $diagnostic = @{}
+        $diagnostic['request_uri'] = $uri
+        $diagnostic['request_body_snippet'] = ($body -split "`n" | Select-Object -First 3) -join "`n"
+        $diagnostic['response_raw'] = $null
+        try {
+            if ($resp -is [string]) { $diagnostic['response_raw'] = $resp }
+            else { $diagnostic['response_parsed'] = $resp | ConvertTo-Json -Depth 6 }
+        } catch {
+            $diagnostic['response_error'] = "Could not convert response to JSON for diagnostics: $_"
+        }
+        Write-Host "API key retrieval failed to parse id/api_key. Diagnostics (sensitive fields redacted):"
+        Write-Host ($diagnostic | ConvertTo-Json -Depth 6)
+        throw "API key retrieval succeeded but id/api_key not present or could not be parsed."
+    }
+
+    # Compose the final api key string
+    $api_key = "${idVal}:${apiKeyVal}"
+    Info "API key successfully retrieved."   # do not print the key to logs
+
+} catch {
+    Fail "Failed to obtain API key: $_"
+}
+
+# -------------------
+# Append to winlogbeat.yml
+# -------------------
+$yml = Join-Path $installDir 'winlogbeat.yml'
+if (-not (Test-Path $yml)) {
+    New-Item $yml -ItemType File -Force | Out-Null
+}
+
+try {
+    "output.elasticsearch.hosts: [`"https://${ip}:9200`"]"    | Out-File $yml -Append -Encoding UTF8
+    "output.elasticsearch.api_key: `"$api_key`""              | Out-File $yml -Append -Encoding UTF8
+    "output.elasticsearch.ssl.enabled: true"                  | Out-File $yml -Append -Encoding UTF8
+    "output.elasticsearch.ssl.ca_trusted_fingerprint: `"$fingerprint`"" | Out-File $yml -Append -Encoding UTF8
+} catch {
+    Fail "Failed to update winlogbeat.yml: $_"
+}
+
+# -------------------
+# Start service
+# -------------------
+Info "Starting winlogbeat service..."
+
+try {
+    Start-Service winlogbeat -ErrorAction Stop
 } catch {
     Fail "Failed to start Winlogbeat service: $_"
 }
 
-# --- Cleanup temporary files ---
+# -------------------
+# Cleanup temp dir
+# -------------------
 try {
-    Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
 } catch {
-    Write-Warning "Could not remove temporary directory $tempDir: $_"
+    Write-Warning "Could not remove temporary directory ${tempDir}: $_"
 }
 
-# --- Delete args.txt ---
-Info "Removing args.txt for security..."
+# -------------------
+# Delete args.txt
+# -------------------
+Info "Deleting args.txt..."
 
 try {
     if (Test-Path $argsFile) {
-        Remove-Item -Path $argsFile -Force -ErrorAction Stop
+        Remove-Item -Force $argsFile -ErrorAction Stop
         Info "args.txt deleted."
     } else {
-        Info "args.txt not found; nothing to delete."
+        Info "args.txt not found."
     }
 } catch {
     Write-Warning "Failed to delete args.txt: $_"
 }
 
-Info "Winlogbeat installation + configuration completed."
+Info "Winlogbeat installation and configuration complete."
