@@ -1,21 +1,3 @@
-.SYNOPSIS
-    Download, install, configure and start Winlogbeat (compatible back to PowerShell 3.0).
-
-.DESCRIPTION
-    - Downloads winlogbeat zip using System.Net.WebClient (no progress bar)
-    - Extracts using Shell.Application (compatible with older PowerShell)
-    - Moves to Program Files and names folder "Winlogbeat"
-    - Reads arguments from args.txt (ip, password, fingerprint, hostname)
-    - Runs install-service-winlogbeat.ps1
-    - Runs winlogbeat.exe setup with provided credentials
-    - Requests an API key from Elasticsearch and appends configuration to winlogbeat.yml
-    - Starts the Winlogbeat service
-    - Contains error checking at each step
-
-.NOTES
-    Requires Administrator privileges.
-#>
-
 # --- Ensure running as Administrator ---
 function Assert-Admin {
     try {
