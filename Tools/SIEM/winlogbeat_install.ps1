@@ -58,17 +58,29 @@ try {
     Fail "Failed to create temporary directories: $_"
 }
 
-# --- Download (no progress bar) ---
+# --- Download (Invoke-WebRequest with no progress bar) ---
 Info "Downloading Winlogbeat from $downloadUrl to $zipPath (no progress shown)..."
+
+# Disable progress bar
+$oldProgress = $ProgressPreference
+$ProgressPreference = 'SilentlyContinue'
+
 try {
-    $wc = New-Object System.Net.WebClient
-    # Optional: set a reasonable timeout via underlying WebRequest (WebClient doesn't expose directly).
-    $wc.DownloadFile($downloadUrl, $zipPath)
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -UseBasicParsing -ErrorAction Stop
 } catch {
+    $ProgressPreference = $oldProgress
     Fail "Download failed: $_"
 }
-if (-not (Test-Path $zipPath)) { Fail "Download did not produce a file at $zipPath" }
+
+# Restore progress bar behavior
+$ProgressPreference = $oldProgress
+
+if (-not (Test-Path $zipPath)) {
+    Fail "Download did not produce a file at $zipPath"
+}
+
 Info "Download complete."
+
 
 # --- Extract using Shell.Application (old-friendly) ---
 Info "Extracting zip using Shell.Application..."
