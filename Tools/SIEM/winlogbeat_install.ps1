@@ -356,4 +356,18 @@ try {
     Write-Warning "Could not remove temporary directory $tempDir: $_"
 }
 
+# --- Delete args.txt ---
+Info "Removing args.txt for security..."
+
+try {
+    if (Test-Path $argsFile) {
+        Remove-Item -Path $argsFile -Force -ErrorAction Stop
+        Info "args.txt deleted."
+    } else {
+        Info "args.txt not found; nothing to delete."
+    }
+} catch {
+    Write-Warning "Failed to delete args.txt: $_"
+}
+
 Info "Winlogbeat installation + configuration completed."
