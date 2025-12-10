@@ -362,6 +362,29 @@ try {
     Fail "Failed to update winlogbeat.yml: $_"
 }
 
+# --- Comment out default localhost hosts line in winlogbeat.yml ---
+Info "Commenting out default hosts entry in winlogbeat.yml..."
+
+$ymlPath = Join-Path $installDir "winlogbeat.yml"
+
+if (-not (Test-Path $ymlPath)) {
+    Fail "winlogbeat.yml not found at ${ymlPath}"
+}
+
+try {
+    $yml = Get-Content $ymlPath
+
+    # Comment out any line containing: hosts: ["localhost:9200"]
+    $newYml = $yml -replace '^\s*hosts:\s*\["localhost:9200"\]', '# hosts: ["localhost:9200"]'
+
+    # Write back
+    Set-Content -Path $ymlPath -Value $newYml -Encoding UTF8
+
+    Info "Default hosts entry commented out."
+} catch {
+    Fail "Failed to edit winlogbeat.yml: $_"
+}
+
 # -------------------
 # Start service
 # -------------------
