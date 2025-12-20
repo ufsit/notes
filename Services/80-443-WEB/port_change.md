@@ -5,8 +5,8 @@
 /etc/httpd/conf/httpd.conf #(RHEL/CentOS/Alma/Rocky)
 ```
 ```
-Listen 80 --> Listen <port_number>
-<VirtualHost *:80>  --> <VirtualHost *:<port_number>> #(Check virtual hosts if applicable)
+Listen 80  -->  Listen <port_number>
+<VirtualHost *:80>   -->  <VirtualHost *:<port_number>> #(Check virtual hosts if applicable)
 ```
 ```
 sudo systemctl restart apache2   # Debian/Ubuntu
@@ -29,14 +29,14 @@ server {                server {
 sudo nginx -t        #test first
 sudo systemctl restart nginx
 ss -tulpn | grep nginx
-```
+``` 
 __________________________________________________________________________________________________________________
 **Lighttpd**
 ```
 /etc/lighttpd/lighttpd.conf
 ```
 ```
-server.port = 80 --> server.port = <port_number>
+server.port = 80  -->  server.port = <port_number>
 ```
 ```
 sudo systemctl restart lighttpd
@@ -48,7 +48,7 @@ ________________________________________________________________________________
 ```
 ```
 :80 {                            :<port_number> {
-    root * /var/www/html  -->        root * /var/www/html
+    root * /var/www/html   -->        root * /var/www/html
 }                                }
 ```
 ```
@@ -60,11 +60,37 @@ ________________________________________________________________________________
 /conf/server.xml
 ```
 ```
-<Connector port="80" protocol="HTTP/1.1"/> --> <Connector port="<port_number>" protocol="HTTP/1.1"/>
+<Connector port="80" protocol="HTTP/1.1"/>  -->  <Connector port="<port_number>" protocol="HTTP/1.1"/>
 ```
 ```
 sudo systemctl restart tomcat
 ```
 __________________________________________________________________________________________________________________
-
-Feel free to add any more, obviously windows will be different so we will have to figure that out as well **-Niklas**
+**Jellyfin**
+```
+/etc/jellyfin/system.xml
+```
+```
+<PublicPort<8080>/PublicPort>   -->   <PublicPort><port_number></PublicPort>
+<HttpServerPortNumber>8080</HttpServerPortNumber> --> <HttpServerPortNumber><port_number></HttpServerPortNumber>
+```
+```
+sudo systemctl restart jellyfin
+ss -tulpn | grep jellyfin
+```
+__________________________________________________________________________________________________________________
+**Squid Proxy**
+```
+/etc/squid/squid.conf
+/etc/squid3/squid.conf  #on older systems
+```
+```
+http_port 80  -->  http_port <port_number>
+```
+```
+sudo squid -k parse
+sudo systemctl restart squid
+ss -tulpn | grep squid
+```
+__________________________________________________________________________________________________________________
+Feel free to add any more, obviously windows will be different, download location depends on how they installed :) **-Niklas**
