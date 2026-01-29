@@ -46,9 +46,9 @@
   * `RD /S /Q "%WinDir%\System32\GroupPolicyUsers" && RD /S /Q "%WinDir%\System32\GroupPolicy"`
   * `gpupdate /force`
 * Disable the Firewall
-# For service_instake.ps1
-`$P | Select "DisplayName", "State", "AccountType", "AccountUI", "Evidence" | Format-Table -wrap | more`
   * `netsh advfirewall set currentprofile state off`
 * Edit Group Policy from command line
   * `LGPO.exe`
   * https://www.microsoft.com/en-us/download/details.aspx?id=55319
+# For service_instake.ps1
+`$P | Select "DisplayName", "State", "AccountType", "AccountUI", "Evidence" | Format-Table -wrap | more`
