@@ -1,3 +1,11 @@
+param(
+    [Parameter(Mandatory=$true, ParameterSetName="Domain")]
+    [switch]$D,
+
+    [Parameter(Mandatory=$true, ParameterSetName="Local")]
+    [switch]$L
+)
+
 # ==========================================
 # Password Rotation Script
 # Service-Aware with Review Output
@@ -10,6 +18,10 @@ $OutputFile   = ".\changed_passwords.txt"
 
 $ExcludeSet = New-Object System.Collections.Generic.HashSet[string]
 $ReviewList = @()
+
+$DoDomain = $D.IsPresent
+$DoLocal = $L.IsPresent
+$ComputerName = $env:COMPUTERNAME
 
 # --------------------------
 # Manual exclusions
@@ -67,7 +79,7 @@ Get-WmiObject Win32_Service |
 # --------------------------
 # Discover AD SPN accounts
 # --------------------------
-if (Get-Module -ListAvailable -Name ActiveDirectory) {
+if ($DoDomain -and (Get-Module -ListAvailable -Name ActiveDirectory)) {
     Import-Module ActiveDirectory -ErrorAction SilentlyContinue
 
     Get-ADUser -Filter 'ServicePrincipalName -like "*"' -Properties ServicePrincipalName |
@@ -151,6 +163,9 @@ foreach ($User in $Users) {
 
     # Skip excluded/service accounts
     if ($ExcludeSet.Contains($UserLower)) { continue }
+
+    if ($DoLocal -and $Domain -ne $ComputerName) { continue }
+    if ($DoDomain -and (-not $DoLocal) -and $Domain -eq $ComputerName) { continue }
 
     try {
         $NewPassword = New-RandomPassword -Length $PasswordLength
