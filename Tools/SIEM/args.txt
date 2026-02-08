@@ -1,4 +1,5 @@
-ip=
+elastic_ip=
+kibana_ip
 password=
 fingerprint=
 hostname=

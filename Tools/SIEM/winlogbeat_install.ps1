@@ -156,14 +156,15 @@ try {
         }
     }
 
-    if ($parsed.Count -ge 4) {
-        $ip          = $parsed['ip']
+    if ($parsed.Count -ge 5) {
+        $elastic_ip  = $parsed['elastic_ip']
+        $kibana_ip   = $parsed['kibana_ip']
         $password    = $parsed['password']
         $fingerprint = $parsed['fingerprint']
         $hostname    = $parsed['hostname']
     } else {
-        if ($raw.Count -lt 4) { Fail "args.txt must contain 4 values." }
-        $ip          = $raw[0]
+        if ($raw.Count -lt 5) { Fail "args.txt must contain 4 values." }
+        $elastic_ip  = $raw[0]
         $password    = $raw[1]
         $fingerprint = $raw[2]
         $hostname    = $raw[3]
@@ -198,7 +199,7 @@ try {
 $exe = Join-Path $installDir 'winlogbeat.exe'
 if (-not (Test-Path $exe)) { Fail "winlogbeat.exe not found in ${installDir}" }
 
-$kibanaHost = "http://${ip}:5601"
+$kibanaHost = "http://${kibana_ip}:5601"
 $hostsExpr = "['${ip}:9200']"
 
 $setupArgs = @(
