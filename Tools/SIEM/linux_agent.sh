@@ -219,6 +219,10 @@ sed -i "s/  id:.*/  id: modsec/g" /etc/filebeat/filebeat.yml
 sed -i "s/  enabled:.*/  enabled: true/g" /etc/filebeat/filebeat.yml
 sed -i "s/\- \/var\/log\/\*\.log/\- \/root\/blue\/webandaid\/*.json\n  processors:\n    \- decode_json_fields:\n        fields: \[\"message\"\]\n        target: \"\"\n        add_error_key: true\n        max_depth: 2\n        expand_keys: true\n        process_array: true\n        overwrite_keys: true\n/g" /etc/filebeat/filebeat.yml
 
+# Automatically ingest system logs (ex: auth.log)
+filebeat -c /etc/filebeat/filebeat.yml modules enable system
+sed -i "s/false/true/g" /etc/filebeat/modules.d/system.yml
+
 for beat in auditbeat filebeat packetbeat; do
   sed -i 's/hosts: \["localhost/# hosts: \["localhost/g' /etc/$beat/$beat.yml
   $beat test config -c /etc/$beat/$beat.yml > /dev/null
