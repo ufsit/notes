@@ -129,8 +129,7 @@ EOL
     sed -i '50,77 d' /etc/auditbeat/auditbeat.yml
     rm -rf logs data
   else
-    sh archive_install.sh $ip $finger $pass $hostname
-    exit $?
+    sh archive_install.sh 
   fi
 else
     apt-get install auditbeat filebeat packetbeat curl -y > /dev/null
