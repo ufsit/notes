@@ -50,7 +50,7 @@ enabled=1
 autorefresh=1
 type=rpm-md
 EOL
-    yum install auditbeat filebeat packetbeat curl -y -q > /dev/null
+    yum install auditbeat filebeat packetbeat curl -y --allowerasing -q > /dev/null
   elif command -v zypper > /dev/null 2>&1; then 
     rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
     cat >> /etc/zypp/repos.d/elastic.repo << EOL
@@ -215,6 +215,11 @@ processors:
 EOL
 
 sed -i "s/\/usr\/sbin\n  - \/etc/\/usr\/sbin\n  - \/etc\n  - \/tmp\n  - \/var\/tmp\n  - /lib/x86_64-linux-gnu/security\n  recursive: true\n  exclude_files:\n  - '\.sw.$'\n  - '\.swpx$'\n  - '~$'\n  - '\/\#.*\#$'\n  - '\\.save$'/g" /etc/auditbeat/auditbeat.yml
+
+# Configure filebeat for modesc
+sed -i "s/  id:.*/  id: modsec/g" /etc/filebeat/filebeat.yml
+sed -i "s/  enabled:.*/  enabled: true/g" /etc/filebeat/filebeat.yml
+sed -i "s/\- \/var\/log\/\*\.log/\- \/root\/blue\/webandaid\/*.json\n  processors:\n    \- decode_json_fields:\n        fields: \[\"message\"\]\n        target: \"\"\n        add_error_key: true\n        max_depth: 2\n        expand_keys: true\n        process_array: true\n        overwrite_keys: true\n/g" /etc/filebeat/filebeat.yml
 
 for beat in auditbeat filebeat packetbeat; do
   sed -i 's/hosts: \["localhost/# hosts: \["localhost/g' /etc/$beat/$beat.yml
