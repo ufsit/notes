@@ -108,47 +108,45 @@ $ReviewList |
 # --------------------------
 # Password generation
 # --------------------------
-function New-RandomPassword {
-    param ([int]$Length)
+function New-ReadablePassword {
+    param (
+        [int]$WordCount = 4,
+        [string]$WordFile = ".\words.txt"
+    )
 
-    if ($Length -lt 1) {
-        throw "Password length must be at least 1"
+    if (-not (Test-Path $WordFile)) {
+        throw "Wordlist file not found: $WordFile"
     }
 
-    $AlphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    $SpecialChar  = "!"
+    $Words = Get-Content $WordFile | Where-Object { $_.Trim() -ne "" }
+
+    if ($Words.Count -lt 100) {
+        throw "Wordlist too small to be secure"
+    }
+
     $Rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
 
-    # Generate remaining characters
-    $RemainingLength = $Length - 1
-    $Bytes = New-Object byte[] $RemainingLength
-    $Rng.GetBytes($Bytes)
-
-    $Chars = for ($i = 0; $i -lt $RemainingLength; $i++) {
-        $AlphaNumeric[$Bytes[$i] % $AlphaNumeric.Length]
+    function Get-RandomIndex ($Max) {
+        $Bytes = New-Object byte[] 4
+        $Rng.GetBytes($Bytes)
+        [Math]::Abs([BitConverter]::ToInt32($Bytes,0)) % $Max
     }
 
-    # Add mandatory !
-    $Chars += $SpecialChar
-
-    # Shuffle characters (Fisher-Yates)
-    for ($i = $Chars.Count - 1; $i -gt 0; $i--) {
-        $SwapByte = New-Object byte[] 1
-        $Rng.GetBytes($SwapByte)
-        $j = $SwapByte[0] % ($i + 1)
-
-        $Temp = $Chars[$i]
-        $Chars[$i] = $Chars[$j]
-        $Chars[$j] = $Temp
+    $ChosenWords = for ($i = 0; $i -lt $WordCount; $i++) {
+        $Word = $Words[Get-RandomIndex $Words.Count]
+        # Capitalize for complexity
+        $Word.Substring(0,1).ToUpper() + $Word.Substring(1)
     }
 
-    return -join $Chars
+    $Number = Get-RandomIndex 1000
+    $Special = "!"
+
+    return ($ChosenWords -join "-") + "$Number$Special"
 }
 
 # --------------------------
 # Enumerate users
 # --------------------------
-$PasswordLength = 12
 $Results = @()
 $Users = Get-WmiObject Win32_UserAccount
 
@@ -168,14 +166,18 @@ foreach ($User in $Users) {
     if ($DoDomain -and (-not $DoLocal) -and $Domain -eq $ComputerName) { continue }
 
     try {
-        $NewPassword = New-RandomPassword -Length $PasswordLength
+        $NewPassword = New-ReadablePassword
 
         $AdsiPath = "WinNT://$Domain/$UserName,user"
         $AdsiUser = [ADSI]$AdsiPath
         $AdsiUser.SetPassword($NewPassword)
         $AdsiUser.SetInfo()
 
-        $Results += "${Domain}\${UserName}:${NewPassword}"
+        $Plain = "${Domain}\${UserName}:${NewPassword}"
+        $Secure = ConvertTo-SecureString $Plain -AsPlainText -Force
+        $Encrypted = ConvertFrom-SecureString $Secure
+        $Results += $Encrypted
+
 
     }
     catch {
