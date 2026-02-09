@@ -1,3 +1,60 @@
+# ===============================
+# Pre-Reset GPO Backup (HTML + TXT)
+# ===============================
+
+Write-Host "Backing up existing GPO settings..." -ForegroundColor Yellow
+
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$workingDir = Get-Location
+
+$backupGpos = @(
+    "Default Domain Policy",
+    "Default Domain Controllers Policy"
+)
+
+foreach ($gpoName in $backupGpos) {
+
+    try {
+        $gpo = Get-GPO -Name $gpoName -ErrorAction Stop
+    }
+    catch {
+        Write-Warning "Skipping backup: $gpoName not found."
+        continue
+    }
+
+    $baseName = $gpoName.Replace(" ", "_")
+
+    # HTML report (full settings)
+    $htmlPath = Join-Path $workingDir "$baseName`_PRE_RESET_$timestamp.html"
+    Get-GPOReport `
+        -Guid $gpo.Id `
+        -ReportType Html `
+        -Path $htmlPath
+
+    # TXT report (summary + permissions)
+    $txtPath = Join-Path $workingDir "$baseName`_PRE_RESET_$timestamp.txt"
+
+    $txtContent = @()
+    $txtContent += "GPO Name: $($gpo.DisplayName)"
+    $txtContent += "GUID: $($gpo.Id)"
+    $txtContent += "Creation Time: $($gpo.CreationTime)"
+    $txtContent += "Modification Time: $($gpo.ModificationTime)"
+    $txtContent += "User Version: $($gpo.User.DSVersion)"
+    $txtContent += "Computer Version: $($gpo.Computer.DSVersion)"
+    $txtContent += ""
+    $txtContent += "=== Security Filtering & Delegation ==="
+
+    Get-GPPermission -Guid $gpo.Id -All | ForEach-Object {
+        $txtContent += "$($_.Trustee.Name) [$($_.TrusteeType)] : $($_.Permission)"
+    }
+
+    $txtContent | Out-File -FilePath $txtPath -Encoding UTF8
+
+    Write-Host "Backed up $gpoName" -ForegroundColor Green
+}
+
+Write-Host "Pre-reset GPO backup completed." -ForegroundColor Cyan
+
 Write-Host "Starting secure domain policy reset..." -ForegroundColor Cyan
 
 # ===============================
@@ -127,3 +184,44 @@ foreach ($gpoName in $gpoNames) {
 }
 
 Write-Host "Domain policy reset and hardening completed successfully." -ForegroundColor Cyan
+
+# ===============================
+# Active GPO Enumeration
+# ===============================
+
+Write-Host "Enumerating other active GPOs in the domain..." -ForegroundColor Yellow
+
+$allGpos = Get-GPO -All
+$defaultNames = @(
+    "Default Domain Policy",
+    "Default Domain Controllers Policy"
+)
+
+$otherGpos = $allGpos | Where-Object {
+    $defaultNames -notcontains $_.DisplayName
+}
+
+if (-not $otherGpos) {
+    Write-Host "No additional GPOs found in the domain." -ForegroundColor Green
+}
+else {
+
+    Write-Host "Additional GPOs detected:" -ForegroundColor Cyan
+
+    foreach ($gpo in $otherGpos) {
+
+        # Check if linked anywhere
+        $links = Get-GPOLink -Guid $gpo.Id -ErrorAction SilentlyContinue
+
+        $linkedStatus = if ($links) { "LINKED" } else { "NOT LINKED" }
+
+        Write-Host "----------------------------------------" -ForegroundColor DarkGray
+        Write-Host "Name: $($gpo.DisplayName)"
+        Write-Host "GUID: $($gpo.Id)"
+        Write-Host "Status: $linkedStatus"
+        Write-Host "User Enabled: $($gpo.User.Enabled)"
+        Write-Host "Computer Enabled: $($gpo.Computer.Enabled)"
+    }
+}
+
+Write-Host "GPO enumeration completed." -ForegroundColor Cyan
