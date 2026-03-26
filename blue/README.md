@@ -1,8 +1,7 @@
 # Table of Contents
 * [Directories Explained](#directories-explained)
 * [Markdown Usage](#markdown-and-formatting-documentation)
-* [Note Template](#table-of-contents-2)
-
+* [Note Template](#notes-template)
 # Directories Explained
 * `Competitions` - Documenting past experiences, resources, and lessons learned from competitions
 * `Injects` - Templates for injects, templates, and tooling.
@@ -62,7 +61,7 @@ Use square brackets for the text and parentheses for the URL:
 [Internal Page](/docs/Templates/mkdocs-formatting.md)
 ```
 
-- You can also link to **sepcific sections**
+- You can also link to **specific sections**
 
 ```markdown
 [Section in page](#section-name-all-lowercase)
@@ -79,7 +78,7 @@ Images are formatted similarly to links, with an exclamation mark (`!`) at the b
 
 ### Upload Location
 
-Place all images in the [`/docs/Images`](https://gitlab.infosec.ufl.edu/documentation/detection-playbook/-/tree/main/docs/Images) directory of the repository.
+Place all images in the ['/blue/assets'](/blue/assets/) directory of the repository.
 
 ### Embedding Images
 
@@ -88,20 +87,27 @@ There are two main ways to include images:
 1. **Direct Link to Image**  
    Markdown:
    ```markdown
-   [View Image](/docs/Images/Test_Image.png)
+   [View Image](/blue/assets/blue.webp)
    ```
+   Example:
+   [View Image](/blue/assets/blue.webp)
 
 2. **Embed Inline Image**  
    Markdown:
    ```markdown
-   ![Test Image](/docs/Images/Test_Image.png)
+   ![Test Image](/blue/assets/blue.webp)
    ```
 
    Example:  
-   ![Test Image](/docs/Images/Test_Image.png)
+   ![Test Image](/blue/assets/blue.webp)
 
-Make sure image paths are correct relative to the root of the `docs` folder. (In VS Code you can autofill relative paths).
-
+3. **Relative Path Inline Image** <br>
+   Markdown:
+   ```markdown
+   ![Test Image](./assets/blue.webp)
+   ```
+   Example: <br>
+   ![Test Image](./assets/blue.webp)
 ---
 
 ## Code Blocks
@@ -258,6 +264,9 @@ Any of [these emojis](https://gist.github.com/rxaviers/7360908) will be rendered
 ---
 ---
 
+<br>
+
+# Notes Template:
 <br>
 
 # Table of Contents
