@@ -1,0 +1,123 @@
+description: Pipeline for parsing MySQL error logs
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- grok:
+    field: message
+    patterns:
+    - '%{MYSQLDATETIME}%{SPACE}(%{NUMBER:mysql.thread_id:long}%{SPACE})?(\[%{DATA:log.level}\]%{SPACE})?%{GREEDYMULTILINE:message}'
+    - '%{GREEDYDATA:message}'
+    ignore_missing: true
+    pattern_definitions:
+      LOCALDATETIME: (?:%{YEAR}-%{MONTHNUM}-%{MONTHDAY}|%{NUMBER})%{SPACE}%{TIME}
+      MYSQLDATETIME: (?:%{LOCALDATETIME:_tmp.local_timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp})
+      GREEDYMULTILINE: |-
+        (.|
+        )+
+- grok:
+    field: message
+    patterns:
+    - '(\[%{DATA:event.code}\])%{SPACE}(\[%{DATA:event.provider}\])%{SPACE}%{NOTSPACE}: Forcing close of thread %{INT}  user: ''%{USERNAME:user.name}'''
+    - '(\[%{DATA:event.code}\])%{SPACE}(\[%{DATA:event.provider}\])%{SPACE}%{GREEDYMULTILINE}'
+    - "%{ACCESS:_tmp.auth_failed} for user '%{USERNAME:user.name}'(@'%{IP:source.ip}')?"
+    - '%{IP_RESOLVE_ERROR:_tmp.ip_resolve_error}'
+    - "Server socket created on IP: '%{IP:source.ip}'"
+    - '%{GREEDYDATA}'
+    ignore_missing: true
+    ignore_failure: true
+    pattern_definitions:
+      ACCESS: "Access denied" 
+      IP_RESOLVE_ERROR: "IP address '%{IP:source.ip}' could not be resolved: Name or service not known"
+      GREEDYMULTILINE: |-
+        (.|
+        )+
+- set:
+    copy_from: '@timestamp'
+    field: event.created
+- date:
+    if: ctx._tmp?.local_timestamp != null && ctx.event?.timezone == null
+    field: _tmp.local_timestamp
+    formats:
+    - yyMMdd H:m:s
+    - yyMMdd  H:m:s
+    - yyyy-MM-dd H:m:s
+    - yyyy-MM-dd  H:m:s
+- date:
+    if: ctx._tmp?.local_timestamp != null && ctx.event?.timezone != null
+    field: _tmp.local_timestamp
+    timezone: '{{ event.timezone }}'
+    formats:
+    - yyMMdd H:m:s
+    - yyMMdd  H:m:s
+    - yyyy-MM-dd H:m:s
+    - yyyy-MM-dd  H:m:s
+- date:
+    if: ctx._tmp?.timestamp != null
+    field: _tmp.timestamp
+    formats:
+    - ISO8601
+- set:
+    field: event.kind
+    value: event
+- append:
+    field: event.category
+    value: database
+- append:
+    field: event.type
+    value: info
+- append:
+    field: event.type
+    value: error
+    if: "ctx?.log?.level != null && ctx.log.level.toLowerCase() == 'error'"
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+      - asn
+      - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- append:
+    field: related.ip
+    value: "{{source.ip}}"
+    if: ctx.source?.ip != null
+- append:
+    field: related.user
+    value: "{{user.name}}"
+    if: ctx.user?.name != null
+- append:
+    field: event.category
+    value: authentication
+    if: ctx._tmp?.auth_failed != null
+- append:
+    field: event.category
+    value: network
+    if: ctx?._tmp?.ip_resolve_error != null
+- append:
+    field: event.action
+    value: logon-failed
+    if: ctx._tmp?.auth_failed != null
+- set:
+    field: event.outcome
+    value: failure
+    if: ctx._tmp?.auth_failed != null
+- remove:
+    field: _tmp
+    ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
