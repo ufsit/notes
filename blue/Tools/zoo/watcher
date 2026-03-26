@@ -1,0 +1,113 @@
+#!/bin/bash
+start()
+{
+  path="$(pwd)"
+  echo "$path"
+  files=($path/*)
+  cd "../funmap"
+  while true; do
+    watcher
+    sleep 5
+  done
+}
+makeJSON() {
+  ip="$1"
+  sub="$2"
+  hostname="$3"
+  distro="$4"
+  printf "{\n  \"properties\": {\n    \"ip\": \"$ip\",\n    \"hostname\": \"$hostname\",\n    \"distro\": \"$distro\"\n  },\n  \"services\": [\n"
+  grep open "fun/$sub/$ip/nmap.txt" | awk '{print "    {\n      \"name\": \""$3"\",\n      \"port\": \""$1"\",\n      \"version\": \""$4"\"\n    },"}' | sed '$ s/.$//'
+  printf "  ],\n  \"defaultCreds\": {\n"
+  if grep -q "$ip:" fun/$sub/crack.txt; then
+    grep "$ip:" fun/$sub/crack.txt | awk -F: '{print "    \"user\": \""$2"\",\n    \"passwd\": \""$3"\""}'
+  else
+    printf "    \"user\": \"N/A\",\n    \"passwd\": \"N/A\"\n"
+  fi
+  printf "  },\n  \"passwords\": [\n"
+  if [ -f fun/$sub/$ip/pass.txt ]; then
+    cat fun/$sub/$ip/pass.txt | awk '{print "    {\n      \"user\": \""$1"\",\n      \"passwd\": \""$2"\"\n    }\n"}'
+  fi
+  printf "  ]\n}"
+}
+scan()
+{
+  ip="$1"
+  sub="$2"
+  distro="$3"
+  hostname="$4"
+  nmap -sS -sV "$ip" > "fun/$sub/$ip/nmap.txt" 2>/dev/null
+  makeJSON $ip $sub "$hostname" $distro > fun/$sub/$ip/data.json
+}
+brute()
+{
+  ip="$1"
+  sub="$2"
+  user="$(grep $ip fun/$sub/crack.txt | awk -F: '{print $2}')"
+  pass="$(grep $ip fun/$sub/crack.txt | awk -F: '{print $3}')"
+  output="$(sshpass -p $pass ssh $user@$ip 'echo \"himom\"' 2>&1 | grep -v 'denied\|closed\|reset\|Connection\|SSHPASS')"
+  if [[ -n "$output" ]]; then
+    echo "yes" >> fun/$sub/$ip/brute.txt
+    printf "\033[91m$ip\033[00m still has default creds!\n"
+  else
+    echo "no"  >> fun/$sub/$ip/brute.txt
+  fi
+}
+run()
+{
+  command="$1"
+  ip="$2"
+  sub="$3"
+  user="$(tail -n 1 fun/$sub/$ip/pass.txt | awk '{print $1}')"
+  pass="$(tail -n 1 fun/$sub/$ip/pass.txt | awk '{print $2}')"
+  sshpass -p $pass ssh -tt $user@$ip "echo '$pass' | sudo -S bash \"$command\""
+}
+
+execute()
+{
+  case "$1" in
+    *scan*) printf "\033[96mScanning\033[00m\n"
+        while IFS=" " read -r ip sub distro hostname; do
+          scan $ip $sub $distro "$hostname" &
+        done < $1
+        wait
+        echo "Done scanning!";;
+    *roll*) printf "\033[92mRolling passwords\033[00m\n"
+        while IFS=" " read -r ip sub distro hostname; do
+          run "./agent/rollPasswd.sh" "$ip" "$sub" > fun/$sub/$ip/pass.txt
+        done < $1;;
+    *brute*) printf "\033[91mBrute forcing\033[00m\n"
+        while IFS=" " read -r ip sub distro hostname; do
+          brute $ip $sub &
+        done < $1;;
+    *plant*) printf "\033[91mPlanting vulnerabilities\033[00m\n"
+        num=$(grep -n "xxxxxxxxx" "$1" | awk -F: '{print $1}')
+        while IFS=" " read -r ip sub distro hostname; do
+	  command="echo $ip"
+          while IFS= read -r script; do
+	    command="$command && ./agent/plant/$script"
+          done < <(tail -n "+$((num + 1))" "$1")
+	  run "$command" "$ip" "$sub"
+        done < <(head -n "$((num - 1))" "$1");;
+    *patch*) printf "\033[92mPatching vulnerabilities\033[00m\n"
+        num=$(grep -n "xxxxxxxxx" "$1" | awk -F: '{print $1}')
+        while IFS=" " read -r ip sub distro hostname; do
+	  command="echo $ip"
+          while IFS= read -r script; do
+	    command="$command && ./agent/patch/$script"
+          done < <(tail -n "+$((num + 1))" "$1")
+	  run "$command" "$ip" "$sub"
+        done < <(head -n "$((num - 1))" "$1");;
+    *) printf "unknown command\n";;
+  esac
+}
+watcher()
+{
+  for f in $path/*; do
+    if [[ ! "${files[@]}" =~ "$f" ]]; then
+      execute $f
+    fi
+  done
+  files=($path/*)
+}
+
+start

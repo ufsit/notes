@@ -1,0 +1,175 @@
+	    ]});
+	    document.getElementById('scan-btn').addEventListener('click', function () {
+		let selectedNodes = la.nodes(':selected');
+		if (selectedNodes.length === 0) {
+		    la.nodes().select()
+		    selectedNodes = la.nodes(':selected');
+		}
+		let scriptContent = selectedNodes.map(node => node.id() + " " + node.data().sub + " " + node.data().distro + " " + node.data().hostname).join('\n');
+		scriptContent+='\n';
+		const blob = new Blob([scriptContent], {type: "text/x-sh"});
+		const a = document.createElement("a");
+		a.href = URL.createObjectURL(blob);
+		a.download = "scan";
+		a.click();
+		URL.revokeObjectURL(a.href);
+	    });	
+	    document.getElementById('roll-passwd-btn').addEventListener('click', function () {
+		let selectedNodes = la.nodes(':selected');
+		if (selectedNodes.length === 0) {
+		    la.nodes().select()
+		    selectedNodes = la.nodes(':selected');
+		}
+		let scriptContent = selectedNodes.map(node => node.id() + " " + node.data().sub + " " + node.data().distro + " " + node.data().hostname).join('\n');
+		scriptContent+='\n';
+		const blob = new Blob([scriptContent], {type: "text/x-sh"});
+		const a = document.createElement("a");
+		a.href = URL.createObjectURL(blob);
+		a.download = "rollPasswd";
+		a.click();
+		URL.revokeObjectURL(a.href);
+	    });	
+	    document.getElementById('brute-force-btn').addEventListener('click', function () {
+		let selectedNodes = la.nodes(':selected');
+		if (selectedNodes.length === 0) {
+		    la.nodes().select()
+		    selectedNodes = la.nodes(':selected');
+		}
+		let scriptContent = selectedNodes.map(node => node.id() + " " + node.data().sub + " " + node.data().distro + " " + node.data().hostname).join('\n');
+		scriptContent+='\n';
+		const blob = new Blob([scriptContent], {type: "text/x-sh"});
+		const a = document.createElement("a");
+		a.href = URL.createObjectURL(blob);
+		a.download = "bruteForce";
+		a.click();
+		URL.revokeObjectURL(a.href);
+	    });	
+            document.getElementById('remove-edge-btn').addEventListener('click', function () {
+                const selectedEdges = la.edges(':selected');
+                if (selectedEdges.length === 0) {
+                    alert('No edge selected!');
+                    return;
+                }
+                selectedEdges.remove();
+            });
+            document.getElementById('add-edge-btn').addEventListener('click', function () {
+                const selectedNodes = la.nodes(':selected');
+                if (selectedNodes.length !== 2) {
+                    alert('Please select exactly 2 nodes.');
+                    return;
+                }
+ 
+                const source = selectedNodes[0].id();
+                const target = selectedNodes[1].id();
+ 
+                const edgeId = 'connect_' + target + '_to_' + source;
+ 
+                if (la.getElementById(edgeId).length > 0) {
+                    alert('Edge already exists.');
+                    return
+                }
+ 
+                la.add({
+                    group: 'edges',
+                    data: {
+                        id: edgeId,
+                        source: source,
+                        target: target
+                    }
+                });
+            });
+	    document.getElementById('plant-vulns-btn').addEventListener('click', function () {
+		let selectedNodes = la.nodes(':selected');
+		if (selectedNodes.length === 0) {
+		    la.nodes().select()
+		    selectedNodes = la.nodes(':selected');
+		}
+		let scriptContent = selectedNodes.map(node => node.id() + " " + node.data().sub + " " + node.data().distro + " " + node.data().hostname).join('\n');
+		const checkedBoxes = document.querySelectorAll('#scriptsData input[type="checkbox"]:checked');
+		const scriptList = Array.from(checkedBoxes).map(cb => cb.id).join('\n');
+		scriptContent += '\nxxxxxxxxx\n' + scriptList + '\n';
+		const blob = new Blob([scriptContent], {type: "text/x-sh"});
+		const a = document.createElement("a");
+		a.href = URL.createObjectURL(blob);
+		a.download = "plantVulns";
+		a.click();
+		URL.revokeObjectURL(a.href);
+	    });	
+	    document.getElementById('patch-vulns-btn').addEventListener('click', function () {
+		let selectedNodes = la.nodes(':selected');
+		if (selectedNodes.length === 0) {
+		    la.nodes().select()
+		    selectedNodes = la.nodes(':selected');
+		}
+		let scriptContent = selectedNodes.map(node => node.id() + " " + node.data().sub + " " + node.data().distro + " " + node.data().hostname).join('\n');
+		const checkedBoxes = document.querySelectorAll('#scriptsData input[type="checkbox"]:checked');
+		const scriptList = Array.from(checkedBoxes).map(cb => cb.id).join('\n');
+		scriptContent += '\nxxxxxxxxx\n' + scriptList + '\n';
+		const blob = new Blob([scriptContent], {type: "text/x-sh"});
+		const a = document.createElement("a");
+		a.href = URL.createObjectURL(blob);
+		a.download = "patchVulns";
+		a.click();
+		URL.revokeObjectURL(a.href);
+	    });	
+
+	    document.getElementById("hostnameDesc").addEventListener("input", function() {
+		const ip = document.getElementById("ipDesc").textContent
+		la.getElementById(ip).data({
+		  distro: this.value,
+		  label: ip + '\n' + this.value
+		});
+	    });
+	    document.getElementById("distroDesc").addEventListener("input", function() {
+		const ip = document.getElementById("ipDesc").textContent
+		la.getElementById(ip).data({
+		  distro: this.value,
+		  image: 'assets/' + this.value + '.png'
+		});
+	    });
+
+	    let userMap = {};
+	    const searchUser = document.getElementById('searchUser');
+	    const result = document.getElementById('result');
+            la.on('click', 'node', function (e) {
+		const path = "fun/" + this.data().sub + "/" + this.data().id + "/data.json"
+		fetch(path)
+		  .then(response => response.json())
+		  .then(json => {
+                    document.getElementById("ipDesc").textContent = json['properties']['ip']
+                    document.getElementById("hostnameDesc").value = json['properties']['hostname']
+                    document.getElementById("distroDesc").value = json['properties']['distro']
+		    document.getElementById("userDesc").textContent = json['defaultCreds']['user'];
+		    document.getElementById("passDesc").textContent = json['defaultCreds']['passwd'];
+		    
+		    const ul = document.getElementById("servicesDesc");
+		    ul.innerHTML = '<h3>Services</h3>';
+		    for (const key in json['services']) {
+		      const li = document.createElement("li");
+		      li.innerHTML = json["services"][key]["name"]+' : '+json["services"][key]["port"] + ' - ' + json["services"][key]["version"];
+		      ul.appendChild(li);
+		    }
+		  });
+		userMap = {};
+		const passPath = "fun/" + this.data().sub + "/" + this.data().id + "/pass.txt";
+		fetch(passPath)
+		  .then((res) => res.text())
+		  .then((text) => {
+		    const lines = text.split('\n')
+		    for (let line of lines) {
+		      const [username, passwd] = line.trim().split(' ');
+		      if (username && passwd) {
+			userMap[username] = passwd;
+		      }
+		    }
+		  })
+            });
+	    searchUser.addEventListener('input', function () {
+		const query = searchUser.value.trim();
+		if (query in userMap) {
+		    result.textContent = userMap[query];
+		}
+	    });
+        </script>
+    </body>
+</html>
