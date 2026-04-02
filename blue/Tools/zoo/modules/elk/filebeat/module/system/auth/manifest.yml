@@ -1,0 +1,24 @@
+module_version: 1.0
+
+var:
+  - name: paths
+    default:
+      - /var/log/auth.log*
+      - /var/log/secure*
+    os.darwin:
+      # this works in OS X < 10.8. Newer darwin versions don't write
+      # ssh logs to files
+      - /var/log/secure.log*
+    os.windows: []
+  - name: tags
+    default: []
+  - name: use_journald
+    default: false
+
+ingest_pipeline:
+  - ingest/entrypoint.yml
+  - ingest/files.yml
+  - ingest/journald.yml
+  - ingest/grok-auth-messages.yml
+
+input: config/auth.yml

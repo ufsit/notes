@@ -1,0 +1,190 @@
+notify:
+  redacted: True
+  suppress_duplicates: True
+
+sources:
+#  redis:
+#    redis_example:
+#      host: YOUR_REDIS_HOST
+#      password: YOUR_REDIS_PASSWORD
+#  s3:
+#    s3_example:
+#      access_key: YOUR_S3_ACCESS_KEY
+#      secret_key: YOUR_S3_SECRET_KEY
+#      bucket_name: YOUR_S3_BUCKET_NAME
+#      cache: true
+#  gcs:
+#    gcs_example:
+#      credentials_file: /path/to/your/credential_file.json
+#      bucket_name: YOUR_GCS_BUCKET_NAME
+#      cache: true
+#      exclude_patterns:
+#        - .pdf
+#        - .docx
+#  firebase:
+#    firebase_example:
+#      credentials_file: /path/to/your/credential_file.json
+#      bucket_name: YOUR_FIREBASE_BUCKET_NAME
+#      cache: true
+#      exclude_patterns:
+#        - .pdf
+#        - .docx
+#  mysql:
+#    mysql_db1:
+#      host: localhost
+#      port: 3306
+#      user: catcher
+#      password: USER_PASSWORD
+#      database: DATABASE_NAME
+#      limit_start: 0   # Specify the starting limit for the range
+#      limit_end: 500   # Specify the ending limit for the range
+#      tables:
+#        - table1
+#        - table2
+#      exclude_columns:
+#         - column1
+#         - column2
+#    mysql_db2:
+#      host: localhost
+#      port: 3306
+#      user: catcher
+#      password: USER_PASSWORD
+#      database: DATABASE_NAME2
+#      limit_start: 0   # Specify the starting limit for the range
+#      limit_end: 500   # Specify the ending limit for the range
+#      tables:
+#        - table1
+#        - table2
+#      exclude_columns:
+#         - column1
+#         - column2
+#  postgresql:
+#    postgresql_example:
+#      host: YOUR_POSTGRESQL_HOST
+#      port: YOUR_POSTGRESQL_PORT
+#      user: YOUR_POSTGRESQL_USERNAME
+#      password: YOUR_POSTGRESQL_PASSWORD
+#      database: YOUR_POSTGRESQL_DATABASE_NAME
+#      limit_start: 0   # Specify the starting limit for the range
+#      limit_end: 500   # Specify the ending limit for the range
+#      tables:
+#        - table1
+#        - table2
+#  mongodb:
+#    mongodb_example:
+#      uri: YOUR_MONGODB_URI
+#      host: localhost
+#      port: YOUR_MONGODB_PORT
+#      username: YOUR_MONGODB_USERNAME
+#      password: YOUR_MONGODB_PASSWORD
+#      database: YOUR_MONGODB_DATABASE_NAME
+#      uri: YOUR_MONGODB_URI  # Use either URI or individual connection parameters
+#      limit_start: 0   # Specify the starting limit for the range
+#      limit_end: 500   # Specify the ending limit for the range
+#      collections:
+#        - collection1
+#        - collection2
+  fs:
+    home:
+      path: /home
+      exclude_patterns:
+#        - .pdf
+#        - .docx
+#        - private
+        - venv
+        - node_modules
+        - dpkg
+        - apt
+
+    varlib:
+      path: /var/lib
+      exclude_patterns:
+        - venv
+        - node_modules
+        - dpkg
+        - apt
+        - snapd
+        
+    varlog:
+      path: /var/log
+      exclude_patterns:
+        - venv
+        - node_modules
+        - dpkg
+        - apt
+        - snapd
+        
+    tmp:
+      path: /tmp
+      exclude_patterns:
+        - venv
+        - node_modules
+        - dpkg
+        - apt
+        
+#    backup:
+#      path: /backup
+#      exclude_patterns:
+#        - venv
+#        - node_modules
+#        - dpkg
+#        - apt
+#        
+#    varwww:
+#      path: /var/www
+#      exclude_patterns:
+#        - venv
+#        - node_modules
+#        - dpkg
+#        - apt
+#        
+#    usrsharenginx:
+#      path: /usr/share/nginx
+#      exclude_patterns:
+#        - venv
+#        - node_modules
+#        - dpkg
+#        - apt
+        
+# couchdb:
+#    couch1:
+#      host: COUCHDB_HOST
+#      port: 5984
+#      username: COUCHDB_USERNAME
+#      password: COUCHDB_PASSWORD
+#      database: COUCHDB_DB_NAME
+
+# gdrive:
+#    drive_example:
+#      folder_name:
+#      credentials_file: /Users/kumarohit/Downloads/client_secret.json ## this will be oauth app json file
+#      cache: true
+#      exclude_patterns:
+#        - .pdf
+#        - .docx
+
+#  gdrive_workspace:
+#    drive_example:
+#      folder_name:
+#      credentials_file: /Users/kumarohit/Downloads/client_secret.json ## this will be service account json file
+#      impersonate_users:
+#        - usera@amce.org
+#        - userb@amce.org
+#      cache: true
+#      exclude_patterns:
+#        - .pdf
+#        - .docx
+#  text:
+#    profile1:
+#      text: "Hello World HHXXXXX"
+#  slack:
+#    slack_example:
+#      channel_types: "public_channel,private_channel"
+#      token: xoxp-XXXXXXXXXXXXXXXXXXXXXXXXX
+#      archived_channels: True ## By default False, set to True if you want to scan archived channels also
+#      limit_mins: 15 ## By default 60 mins
+#      limit_from: last_message ## By default current Unix timestamp, available options - UNIX Timestamp (e..g: 1737354387 last_message
+#      channel_ids:
+#      - XXXXXXXX
+#      blacklisted_channel_ids:
+#      - XXXXXXXX

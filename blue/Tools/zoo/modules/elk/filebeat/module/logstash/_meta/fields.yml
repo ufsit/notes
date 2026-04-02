@@ -1,0 +1,10 @@
+- key: logstash
+  title: Logstash
+  release: ga
+  description: >
+    logstash Module
+  fields:
+    - name: logstash
+      type: group
+      description: >
+      fields:

@@ -1,0 +1,88 @@
+apache#web server
+at#job scheduling
+auditdistd#security auditing
+avahi#mDNS (Zeroconf)
+avahi-autoipd#mDNS (Zeroconf)
+backup#system backup
+bind#DNS server
+_chrony#time synchronization
+chrony#time synchronization
+clamav#antivirus
+cockpit-ws#Web-based admin UI for Linux
+cockpit-wsinstance#Web-based admin UI for Linux
+colord#color management
+cron#scheduled jobs
+cups#Printing services
+cups-browsed#Printing services
+cups-pk-helper#Printing services
+cyrus#email
+Debian-exim#mail
+Debian-gdm#GUI login
+gdm#GUI login
+lightdm#GUI login
+mdm#GUI login
+_dhcp#DHCP
+dhcpd#DHCP
+dnsmasq#Lightweight DNS/DHCP
+_flatpak#Flatpak apps
+ftp#FTP user
+fwupd-refresh#Firmware update service
+games#Legacy user for keeping game scores
+geoclue#Location
+git#Git version control
+git_daemon#Git version control
+gnats#Bug reporting
+gnome-initial-setup#GNOME initial setup
+gnome-remote-desktop#Desktop access for RDP/VNC
+hplip#HP printer drivers
+http#Web servers
+lighttpd#Web servers
+nginx#Web servers
+insights#RHEL security
+irc#Supports Internet Relay Chat, for real-time chat
+landscape#Canonical’s system management
+ldap#LDAP
+libstoragemgmt#Storage management
+list#email
+lp#printing
+lxd#Linux containers
+mail#mail spool
+man#Used to read manual pages
+messagebus#D-Bus
+mpd#Music Player
+mysql#MySQL
+named#DNS
+news#Usenet news
+nm-openconnect#VPN
+nm-openvpn#VPN
+nscd#Name service caching daemon
+ntp#Time sync
+_pflogd#pfSense logs
+polkitd#PolicyKit (GUI)
+postgres#PostgreSQL
+postmaster#PostgreSQL
+proxy#proxys
+pulse#PulseAudio
+redis#in-memory database
+rtkit#PulseAudio scheduler
+sambadaemon#Samba (Windows file sharing)
+saned#Scanner
+setroubleshoot#SELinux
+smmsp#Mail
+speech-dispatcher#Text-to-speech
+squid#Proxy
+sshd#SSH
+sssd#LDAP, Kerberos
+statd#NFS
+strongswan#VPN
+syslog#Logging
+tcpdump#Pcap
+tss#TPM security
+unbound#DNS resolver
+usbmux#iOS USB
+uucp#Legacy user for Unix-to-Unix Copy Program, for remote file transfer/mail
+uuidd#Generates unique identifiers.
+vboxadd#Virtual machines
+www-data#web
+www#web
+xfs#XFS filesystem
