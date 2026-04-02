@@ -3,20 +3,82 @@ Work in progress...
 
 Will eventually include all relevant operating systems
 ## Script
-Currently we have a script that works on Ubuntu 16 and up
+This script has been tested on:
+- Ubuntu 16,20,24
+- Centos 7
+- Fedora 30
+- Debian 9
+- openSuse Leap 16
+- Alpine 3.10.9
 
 You can find the script [here](/Tools/SIEM/linux_agent.sh)
 
-## Debian-Like
+## Installing
+### Debian-Like (apt package manager)
 Some initial setup (skip if on the elastic server)[^1]
 1. `wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg`
 2. 
 ```
-sudo apt-get install apt-transport-https
+sudo apt-get install apt-transport-https curl -y
 echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
 sudo apt-get update
+sudo apt-get install auditbeat filebeat packetbeat -y
 ```
-3. Run this command to get an api key[^7]:
+
+### Redhat (yum/dnf package manager)[^1]
+1. `sudo rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch`
+2. 
+```
+cat >> /etc/yum.repos.d/elastic.repo << EOL
+[elastic-8.x]
+name=Elastic repository for 8.x packages
+baseurl=https://artifacts.elastic.co/packages/8.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+EOL
+```
+3. `sudo yum install auditbeat filebeat packetbeat curl -yq`
+
+### OpenSUSE (zypper package manager)[^1]
+1. `sudo rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch`
+2. 
+```
+cat >> /etc/zypp/repos.d/elastic.repo << EOL
+[elastic-8.x]
+name=Elastic repository for 8.x packages
+baseurl=https://artifacts.elastic.co/packages/8.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+EOL
+```
+3. `sudo zypper --non-interactive install auditbeat filebeat packetbeat curl`
+
+### Alpine (apk package manager)
+1. `apk update && apk add curl wget`
+2. `curl -O -L  https://github.com/ufsit/shreksophone1/raw/refs/heads/main/alpine-beats.tar.gz`
+3. `tar zxf alpine-beats.tar.gz && rm alpine-beat.tar.gz`
+4. **For every beat (auditbeat, filebeat, packetbeat)** complete the following steps:
+    1. `mv <beat> /usr/bin`
+    2. `curl -L -O https://artifacts.elastic.co/downloads/beats/<beat>/<beat>-8.19.6-linux-x86_64.tar.gz`
+    3. `tar xzf <beat>-8.19.6-linux-x86_64.tar.gz && rm <beat>-8.19.6-linux-x86_64.tar.gz`
+    4. `mv <beat>-8.19.6-linux-x86_64 /etc/<beat>`
+    5. `rm /etc/<beat>/<beat>`
+    6. `sed -i "s/\${path.config}/\/etc\/<beat>/g" /etc/<beat>/<beat>.yml`
+    7. Add our open-rc service template for every beat into `/etc/init.d/<beat>`
+    8. `chmod +x /etc/init.d/<beat>`
+    9. `rc-update add <beat> default`
+5. Remove lines 50-77 from the auditbeat.yml config file
+6. Whenever you see `systemctl enable --now <beat>` later, replace it with `service <beat> start`.
+
+
+## Configuring
+Run this command to get an api key[^7]:
 ```
 curl -k -X POST -u elastic:<password> "https://<server_ip>:9200/_security/api_key?pretty" -H 'Content-Type: application/json' -d'
 {
@@ -26,7 +88,7 @@ curl -k -X POST -u elastic:<password> "https://<server_ip>:9200/_security/api_ke
       "cluster": ["monitor", "read_ilm", "read_pipeline"],
       "index": [
         {
-          "names": ["filebeat-*", "auditbeat", packetbeat"],
+          "names": ["filebeat-*", "auditbeat-*", packetbeat-*"],
           "privileges": ["view_index_metadata", "create_doc", "auto_configure"]
         }
       ]
@@ -35,9 +97,9 @@ curl -k -X POST -u elastic:<password> "https://<server_ip>:9200/_security/api_ke
 }
 '
 ```
+The api key you want to save for later is "id:key"
 ### Auditbeat [^2]
-1. `sudo apt-get install auditbeat`
-2. Edit `/etc/auditbeat/auditbeat.yml` and find the section `output.elasticsearch:` and replace it with:
+1. Edit `/etc/auditbeat/auditbeat.yml` and find the section `output.elasticsearch:` and replace it with:
 ```
 output.elasticsearch:
   hosts: ["https://<server_ip>:9200"]
@@ -47,6 +109,31 @@ output.elasticsearch:
     enabled: true
     ca_trusted_fingerprint: "<ca_fingerprint>"
 ```
+2. Place this at the end of `/etc/auditbeat/auditbeat.yml` to filter out audit logs created by the beats:
+```
+processors:
+  - drop_event:
+      when:
+        or:
+          - and:
+            - equals:
+                destination.ip: '192.168.1.90'
+            - or:
+              - equals:
+                  destination.port: 9200
+              - equals:
+                  destination.port: 5601
+          - equals:
+              process.name: 'packetbeat'
+          - equals:
+              process.name: 'auditbeat'
+          - equals:
+              process.name: 'filebeat'
+          - equals:
+              destination.ip 127.0.0.1
+          - equals:
+              destination.ip: 127.0.0.53
+```
 3. Run `sudo auditbeat test output` to test our configurations
 4. Place our auditd rules into `/etc/auditbeat/audit.rules.d/rules.conf` [^3]
 5. `sudo systemctl daemon-reload && sudo systemctl enable auditbeat --now`
@@ -55,21 +142,20 @@ output.elasticsearch:
 
 **TODO: Add security rules for alerting and detection**
 ### Filebeat [^4]
-1. `sudo apt-get install filebeat`
-2. Repeat step 2 from Auditbeat but edit `/etc/filebeat/filebeat.yml` this time
-3. Run `sudo filebeat modules list` to check for the supported services
-4. Run `sudo filebeat modules enable <service_module>` for each service on the machine
-5. Edit the corresponding module file at `/etc/filebeat/modules.d/<service_module>.yml` and enable the logs you want
-6. If there is an unsupported service, edit `/etc/filebeat/filebeat.yml` and at `paths:` under `filebeat.inputs:` add the log path for the service to monitor
-7. Run `sudo filebeat test output` and `sudo filebeat test config` to make sure everything is valid
-8. `sudo systemctl daemon-reload && sudo systemctl enable filebeat --now`
+1. Repeat step 2 from Auditbeat but edit `/etc/filebeat/filebeat.yml` this time
+2. Run `sudo filebeat modules list` to check for the supported services
+3. Run `sudo filebeat modules enable <service_module>` for each service on the machine
+4. Edit the corresponding module file at `/etc/filebeat/modules.d/<service_module>.yml` and enable the logs you want
+5. If there is an unsupported service, edit `/etc/filebeat/filebeat.yml` and at `paths:` under `filebeat.inputs:` add the log path for the service to monitor
+6. Run `sudo filebeat test output` and `sudo filebeat test config` to make sure everything is valid
+7. `sudo systemctl daemon-reload && sudo systemctl enable filebeat --now`
+
 **Service logs are now forwarded to the ELK server**
 ### Packetbeat[^5]
-1. `sudo apt-get install packetbeat`
-2. Repeat step 2 from Auditbeat in the file `/etc/packetbeat/packetbeat.yml` and don't touch the `pipeline` variable
-3. Edit the ports as needed in `/etc/packetbeat/packetbeat.yml` (Not necessary if everything is using the standard port)
-4. Run `sudo packetbeat devices` and take note of the interface you want to monitor
-5. Modify this line in `/etc/packetbeat/packetbeat.yml`: `packetbeat.interfaces.device: <interface name or number>` to monitor the correct interface
+1. Repeat step 2 from Auditbeat in the file `/etc/packetbeat/packetbeat.yml` and don't touch the `pipeline` variable
+2. Edit the ports as needed in `/etc/packetbeat/packetbeat.yml` (Not necessary if everything is using the standard port)
+3. Run `sudo packetbeat devices` and take note of the interface you want to monitor
+4. Modify this line in `/etc/packetbeat/packetbeat.yml`: `packetbeat.interfaces.device: <interface name or number>` to monitor the correct interface
 5. Edit `/etc/packetbeat/packetbeat.yml` and add the following lines [^6]
 ```
 packetbeat.interfaces.type: af_packet
