@@ -7,9 +7,9 @@
 
 # To Do
 * Deprecate the following directories in favor of their equivalent modules: 
-  * `baks` $\rightarrow$ `squirrel`
+  * `baks` $\rightarrow$ `chipmunk`
   * `linux_agent_log` $\rightarrow$ `elk`
   * `net_enum_log` $\rightarrow$ `nematode`
-  * `nmap_log` $\rightarrow$ DEPRECATED
+  * `nmap_log` $\rightarrow$ `hawk`
   * `passwd_roll_log` $\rightarrow$ `flamingo`
   * `woof_log` $\rightarrow$ `woof`
