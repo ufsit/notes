@@ -3,4 +3,3 @@ This is our master repository, hosting our technical knowledge gathered over the
 
 # Competition Repo
 https://github.com/ufsit/blue.git
-

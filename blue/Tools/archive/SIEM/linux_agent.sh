@@ -212,7 +212,7 @@ processors:
               destination.ip: 127.0.0.53
 EOL
 
-sed -i "s/\/usr\/sbin\n  - \/etc/\/usr\/sbin\n  - \/etc\n  - \/tmp\n  - \/var\/tmp\n  - /lib/x86_64-linux-gnu/security\n  recursive: true\n  exclude_files:\n  - '\.sw.$'\n  - '\.swpx$'\n  - '~$'\n  - '\/\#.*\#$'\n  - '\\.save$'/g" /etc/auditbeat/auditbeat.yml
+sed -i "s/\/usr\/sbin\n  - \/etc/\/usr\/sbin\n  - \/etc\n  - \/tmp\n  - \/var\/tmp\n  - \/lib\/x86_64-linux-gnu\/security\n  recursive: true\n  exclude_files:\n  - '\.sw.$'\n  - '\.swpx$'\n  - '~$'\n  - '\/\#.*\#$'\n  - '\\.save$'/g" /etc/auditbeat/auditbeat.yml
 
 # Configure filebeat for modesc
 sed -i "s/  id:.*/  id: modsec/g" /etc/filebeat/filebeat.yml
