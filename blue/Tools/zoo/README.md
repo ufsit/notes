@@ -44,10 +44,11 @@ Funmap supports many features including:
 Located in the `modules` subdirectory. These are the 'animals' of the zoo, each providing functionality to the manager.
 
 - `armadillo` - General system hardening scripts.
+- `beaver` - Fixes holes in the dam (bad service files, missing binaries, etc.) and performs the appropriate action to restore the green check
 - `chipmunk` - Anything we need for backups, including creating, restoring, managing, and hosting backups.
 - `chomp` - Host-based EDR. The module is responsible for deploying, starting it, collecting its logs, and health checks.
+- `elephant` - Password manager.
 - `elk` - Automation scripts for deploying the Elastic Search stack.
-- `flamingo` - Password change and management scripts. Able to parse `/etc/passwd` and `/etc/shadow` for misconfigurations.
 - `hawk` - Initial scans of the network to populate the network diagram of zoo.
 - `lynx` - PAM debugger, analyzes bad PAM configs and backdoors.
 - `meerkat` - Generic service health checks (whatever `woodpecker` doesn't cover).
