@@ -56,14 +56,6 @@ Located in the `modules` subdirectory. These are the 'animals' of the zoo, each 
 - `nematode` - Gain visibility into service running on hosts and maps relationships between services (i.e. a web server has its database on a different host).
 - `phoenix` - Automated firewall tasks.
 - `suricata` - Automated suricata deployment. Automated connection to ELK.
+- `turtle` - Caddy WAF deployment
 - `woodpecker` - Continuously runs login attempts to check for default credentials.
 - `woof` - Interactive script that patches system and service misconfigurations, can run on a schedule.
-
-# To Do
-
-- Implement password management
-  - Use `modules/meow` as the connector, use `modules/chamaleon` for the password changer
-  - encrypting so the files aren't stored in plaintext.
-- Add LOTS of modules for tool setup
-- Windows support (connect via WinRM, SMB)
-- Create a version of funmap that runs on Windows
