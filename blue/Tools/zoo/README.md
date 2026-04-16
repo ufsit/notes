@@ -44,10 +44,11 @@ Funmap supports many features including:
 Located in the `modules` subdirectory. These are the 'animals' of the zoo, each providing functionality to the manager.
 
 - `armadillo` - General system hardening scripts.
+- `beaver` - Fixes holes in the dam (bad service files, missing binaries, etc.) and performs the appropriate action to restore the green check
 - `chipmunk` - Anything we need for backups, including creating, restoring, managing, and hosting backups.
 - `chomp` - Host-based EDR. The module is responsible for deploying, starting it, collecting its logs, and health checks.
+- `elephant` - Password manager.
 - `elk` - Automation scripts for deploying the Elastic Search stack.
-- `flamingo` - Password change and management scripts. Able to parse `/etc/passwd` and `/etc/shadow` for misconfigurations.
 - `hawk` - Initial scans of the network to populate the network diagram of zoo.
 - `lynx` - PAM debugger, analyzes bad PAM configs and backdoors.
 - `meerkat` - Generic service health checks (whatever `woodpecker` doesn't cover).
@@ -55,14 +56,6 @@ Located in the `modules` subdirectory. These are the 'animals' of the zoo, each 
 - `nematode` - Gain visibility into service running on hosts and maps relationships between services (i.e. a web server has its database on a different host).
 - `phoenix` - Automated firewall tasks.
 - `suricata` - Automated suricata deployment. Automated connection to ELK.
+- `turtle` - Caddy WAF deployment
 - `woodpecker` - Continuously runs login attempts to check for default credentials.
 - `woof` - Interactive script that patches system and service misconfigurations, can run on a schedule.
-
-# To Do
-
-- Implement password management
-  - Use `modules/meow` as the connector, use `modules/chamaleon` for the password changer
-  - encrypting so the files aren't stored in plaintext.
-- Add LOTS of modules for tool setup
-- Windows support (connect via WinRM, SMB)
-- Create a version of funmap that runs on Windows
