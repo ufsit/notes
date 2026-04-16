@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Raver's Paradise — Home{% endblock %}
+{% block content %}
+
+<div style="text-align:center; padding:3rem 0 2rem;">
+    <div class="float" style="font-size:5rem; margin-bottom:1rem;">🎧</div>
+    <h1 style="font-size:3rem;" class="glow-pink">RAVER'S PARADISE</h1>
+    <p style="color:var(--neon-cyan); font-size:1.3rem; margin:0.8rem 0;
+              font-family:'Orbitron',sans-serif; letter-spacing:3px;">
+        THE UNDERGROUND FESTIVAL HUB
+    </p>
+    <p style="color:rgba(255,255,255,0.6); max-width:600px; margin:1rem auto; line-height:1.7;">
+        Your one-stop destination for EDM news, festival lineups, artist profiles,
+        and the best rave community on the internet. Join thousands of ravers worldwide. 🌍
+    </p>
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+        {% if not session.user_id %}
+            <a href="/login" class="btn btn-neon">🔐 JOIN THE RAVE</a>
+        {% else %}
+            <a href="/dashboard" class="btn btn-neon">🎛️ DASHBOARD</a>
+        {% endif %}
+        <a href="/artists" class="btn btn-cyan">🎤 ARTISTS</a>
+    </div>
+</div>
+
+<hr class="divider"/>
+
+<h2 style="text-align:center; margin-bottom:1.5rem;">🎵 TONIGHT'S LINEUP</h2>
+
+{% set artists = [
+    {"icon": "🎷", "name": "GRiZ",           "genre": "Funk • Live Bass",    "color": "neon-orange"},
+    {"icon": "👁️", "name": "REZZ",           "genre": "Dark Techno • Hypno", "color": "neon-purple"},
+    {"icon": "🌌", "name": "LSDREAM",         "genre": "Cosmic Bass • Love",  "color": "neon-cyan"},
+    {"icon": "🕺", "name": "Dom Dolla",       "genre": "Tech House • Groove", "color": "neon-pink"},
+    {"icon": "🌸", "name": "Porter Robinson", "genre": "Future Bass • Art",   "color": "neon-pink"},
+    {"icon": "⭐", "name": "Kesha",           "genre": "Pop • EDM Collab",    "color": "neon-yellow"},
+    {"icon": "🕊️","name": "Galantis",        "genre": "Progressive House",   "color": "neon-green"},
+    {"icon": "💀", "name": "deadmau5",        "genre": "Progressive • Tech",  "color": "neon-pink"},
+    {"icon": "💥", "name": "Excision",        "genre": "Riddim • Bass",       "color": "neon-orange"},
+    {"icon": "🦋", "name": "Illenium",        "genre": "Melodic Dubstep",     "color": "neon-cyan"},
+    {"icon": "🦁", "name": "Griz",            "genre": "Funk • Electronic",   "color": "neon-orange"},
+    {"icon": "🌀", "name": "Subtronics",      "genre": "Riddim • Wobble",     "color": "neon-purple"}
+] %}
+
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:1rem;">
+    {% for artist in artists %}
+    <div class="card card-{{ artist.color }}" style="text-align:center; padding:1.2rem;">
+        <div style="font-size:2.5rem; margin-bottom:0.5rem;">{{ artist.icon }}</div>
+        <h3 class="text-{{ artist.color }}" style="font-size:0.9rem;">{{ artist.name }}</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.8rem;">{{ artist.genre }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<hr class="divider"/>
+
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:1.2rem;">
+    <div class="card card-neon-cyan">
+        <h3>📰 LATEST NEWS</h3>
+        <p style="color:rgba(255,255,255,0.6); line-height:1.8; margin-top:0.5rem;">
+            GRiZ announces a surprise back-to-back set with Subtronics this Friday.
+            Doors open at 9PM. Early bird tickets still available in the VIP section.
+        </p>
+    </div>
+    <div class="card card-neon-pink">
+        <h3>📍 NEXT EVENT</h3>
+        <p style="color:rgba(255,255,255,0.6); line-height:1.8; margin-top:0.5rem;">
+            <strong style="color:var(--neon-yellow)">Cosmic Convergence Festival</strong><br/>
+            July 18–21 · Desert Flats, NV<br/>
+            Featuring REZZ, LSDREAM, Porter Robinson &amp; more.
+        </p>
+    </div>
+    <div class="card card-neon-green">
+        <h3>🎁 MEMBERS ONLY</h3>
+        <p style="color:rgba(255,255,255,0.6); line-height:1.8; margin-top:0.5rem;">
+            Log in to access exclusive setlists, personal notes,
+            artist backstage content, and early ticket drops.
+        </p>
+        {% if not session.user_id %}
+        <a href="/login" class="btn btn-cyan" style="margin-top:1rem; font-size:0.7rem;">
+            LOGIN NOW
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

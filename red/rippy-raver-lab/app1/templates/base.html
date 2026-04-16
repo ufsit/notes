@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}Raver's Paradise{% endblock %}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
+
+        :root {
+            --neon-pink:   #ff00ff;
+            --neon-cyan:   #00ffff;
+            --neon-yellow: #ffff00;
+            --neon-green:  #00ff88;
+            --neon-purple: #bf00ff;
+            --neon-orange: #ff6600;
+            --dark-bg:     #0a0010;
+            --card-bg:     #110022;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #eee;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.05rem;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(191,0,255,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(0,255,255,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 60% 80%, rgba(255,0,255,0.06) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* ── Navbar ── */
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 2rem;
+            background: rgba(10,0,20,0.95);
+            border-bottom: 2px solid var(--neon-purple);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        nav .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.4rem;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            letter-spacing: 2px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        nav ul li a {
+            color: var(--neon-cyan);
+            text-decoration: none;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        nav ul li a:hover {
+            border-color: var(--neon-cyan);
+            color: var(--neon-yellow);
+            background: rgba(0,255,255,0.08);
+            text-shadow: 0 0 8px var(--neon-cyan);
+        }
+
+        /* ── Main ── */
+        main {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--neon-purple);
+            border-radius: 12px;
+            padding: 1.8rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 20px rgba(191,0,255,0.2), inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .card-neon-orange { border-color: var(--neon-orange) !important; }
+        .card-neon-purple { border-color: var(--neon-purple) !important; }
+        .card-neon-cyan   { border-color: var(--neon-cyan)   !important; }
+        .card-neon-pink   { border-color: var(--neon-pink)   !important; }
+        .card-neon-yellow { border-color: var(--neon-yellow) !important; }
+        .card-neon-green  { border-color: var(--neon-green)  !important; }
+
+        .text-neon-orange { color: var(--neon-orange); }
+        .text-neon-purple { color: var(--neon-purple); }
+        .text-neon-cyan   { color: var(--neon-cyan);   }
+        .text-neon-pink   { color: var(--neon-pink);   }
+        .text-neon-yellow { color: var(--neon-yellow); }
+        .text-neon-green  { color: var(--neon-green);  }
+
+        /* ── Headings ── */
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan), var(--neon-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            color: var(--neon-cyan);
+            margin-bottom: 0.8rem;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        h3 { color: var(--neon-pink); margin-bottom: 0.5rem; }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-block;
+            padding: 0.6rem 1.4rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-neon {
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+            color: #fff;
+            box-shadow: 0 0 15px rgba(255,0,255,0.4);
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 30px rgba(255,0,255,0.8);
+            transform: translateY(-2px);
+        }
+
+        .btn-cyan {
+            background: linear-gradient(135deg, #004455, var(--neon-cyan));
+            color: var(--dark-bg);
+            box-shadow: 0 0 15px rgba(0,255,255,0.4);
+        }
+        .btn-cyan:hover {
+            box-shadow: 0 0 30px rgba(0,255,255,0.8);
+            transform: translateY(-2px);
+        }
+
+        .btn-yellow {
+            background: linear-gradient(135deg, #554400, var(--neon-yellow));
+            color: var(--dark-bg);
+        }
+        .btn-yellow:hover {
+            box-shadow: 0 0 30px rgba(255,255,0,0.6);
+            transform: translateY(-2px);
+        }
+
+        /* ── Forms ── */
+        input[type="text"],
+        input[type="password"],
+        input[type="url"],
+        input[type="email"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--neon-purple);
+            border-radius: 6px;
+            color: #eee;
+            padding: 0.6rem 0.9rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 8px rgba(0,255,255,0.3);
+        }
+
+        label {
+            display: block;
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ── Alerts ── */
+        .alert {
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            border-left: 4px solid;
+        }
+        .alert-danger  { background: rgba(255,0,60,0.15);   border-color: #ff003c;           color: #ff6688;            }
+        .alert-success { background: rgba(0,255,136,0.1);   border-color: var(--neon-green);  color: var(--neon-green); }
+        .alert-info    { background: rgba(0,255,255,0.07);  border-color: var(--neon-cyan);   color: var(--neon-cyan);  }
+        .alert-warning { background: rgba(255,255,0,0.07);  border-color: var(--neon-yellow); color: var(--neon-yellow);}
+
+        /* ── Tables ── */
+        table { width: 100%; border-collapse: collapse; }
+
+        th {
+            background: rgba(191,0,255,0.3);
+            color: var(--neon-yellow);
+            padding: 0.7rem 1rem;
+            text-align: left;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid rgba(191,0,255,0.2);
+        }
+
+        tr:hover td { background: rgba(191,0,255,0.1); }
+
+        /* ── Code / Pre ── */
+        pre, code {
+            background: rgba(0,0,0,0.8);
+            border: 1px solid var(--neon-green);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            color: var(--neon-green);
+            overflow-x: auto;
+            font-size: 0.88rem;
+        }
+
+        p code, li code {
+            display: inline;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        /* ── Role colours ── */
+        .role-admin { color: var(--neon-pink); }
+        .role-user  { color: var(--neon-green); }
+
+        /* ── Flag highlight ── */
+        .flag-cell   { color: var(--neon-yellow); font-weight: bold; }
+        .normal-cell { color: #eee; }
+
+        /* ── Animations ── */
+        @keyframes pulse-pink {
+            0%,100% { text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink); }
+            50%      { text-shadow: 0 0 20px var(--neon-pink), 0 0 40px var(--neon-pink), 0 0 60px var(--neon-pink); }
+        }
+        @keyframes pulse-cyan {
+            0%,100% { text-shadow: 0 0 10px var(--neon-cyan); }
+            50%      { text-shadow: 0 0 30px var(--neon-cyan), 0 0 50px var(--neon-cyan); }
+        }
+        @keyframes float {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-10px); }
+        }
+        @keyframes rainbow {
+            0%   { color: #ff0000; }
+            16%  { color: #ff8800; }
+            33%  { color: #ffff00; }
+            50%  { color: #00ff00; }
+            66%  { color: #0088ff; }
+            83%  { color: #ff00ff; }
+            100% { color: #ff0000; }
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        @keyframes bounce {
+            0%,100% { transform: translateY(0) scale(1); }
+            50%      { transform: translateY(-30px) scale(1.3); }
+        }
+
+        .glow-pink { animation: pulse-pink 2s infinite; }
+        .glow-cyan { animation: pulse-cyan 2s infinite; }
+        .float     { animation: float 3s ease-in-out infinite; }
+        .rainbow   { animation: rainbow 1s linear infinite; }
+        .spin      { display: inline-block; animation: spin 2s linear infinite; }
+        .bounce    { display: inline-block; animation: bounce 1s ease-in-out infinite; }
+
+        /* ── Divider ── */
+        .divider {
+            border: none;
+            border-top: 1px solid rgba(191,0,255,0.4);
+            margin: 1.5rem 0;
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(191,0,255,0.3);
+            margin-top: 3rem;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+<nav>
+    <a class="logo" href="/">⚡ RAVER'S PARADISE</a>
+    <ul>
+        <li><a href="/">HOME</a></li>
+        <li><a href="/artists">ARTISTS</a></li>
+        {% if session.user_id %}
+            <li><a href="/dashboard">DASHBOARD</a></li>
+            <li><a href="/notes">MY NOTES</a></li>
+            <li><a href="/upload">UPLOAD</a></li>
+            <li><a href="/profile/{{ session.user_id }}">PROFILE</a></li>
+            <li><a href="/logout">LOGOUT</a></li>
+        {% else %}
+            <li><a href="/login">LOGIN</a></li>
+        {% endif %}
+    </ul>
+</nav>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer>
+    <p>🎵 RAVER'S PARADISE — Your home for all things EDM 🎵</p>
+    <p style="margin-top:0.4rem; color:rgba(255,0,255,0.4);">
+        PLUR · Peace · Love · Unity · Respect
+    </p>
+</footer>
+
+</body>
+</html>

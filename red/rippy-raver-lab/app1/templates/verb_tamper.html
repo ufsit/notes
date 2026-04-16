@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}VIP Access — Raver's Paradise{% endblock %}
+{% block content %}
+
+<h1>🎟️ VIP BACKSTAGE ACCESS</h1>
+
+<div class="card">
+    <h2>RESTRICTED AREA</h2>
+    <p style="color:rgba(255,255,255,0.5); margin-bottom:1rem;">
+        This area is reserved for VIP ticket holders only.
+        Enter your VIP access token below.
+    </p>
+
+    <form method="POST" action="/vip-access">
+        <label>VIP TOKEN</label>
+        <input type="text" name="token" placeholder="Enter your VIP token..."/>
+        <button type="submit" class="btn btn-yellow">🎟️ CLAIM ACCESS</button>
+    </form>
+
+    {% if success is not none %}
+        {% if success %}
+        <div class="alert alert-success" style="margin-top:1rem;">
+            {{ message }}<br/>
+            <strong style="color:var(--neon-yellow)">flag7{v3rb_t4mp3r_b4cks74g3_p4ss}</strong>
+        </div>
+        {% else %}
+        <div class="alert alert-danger" style="margin-top:1rem;">
+            {{ message }}
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<div class="card card-neon-purple">
+    <h2>🎤 BACKSTAGE TONIGHT</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr));
+                gap:1rem; margin-top:1rem;">
+        {% for artist in ["GRiZ 🎷","REZZ 👁️","LSDREAM 🌌","Dom Dolla 🕺","Porter Robinson 🌸"] %}
+        <div style="text-align:center; padding:1rem;
+                    border:1px solid rgba(191,0,255,0.4); border-radius:8px;">
+            <p style="color:var(--neon-cyan)">{{ artist }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

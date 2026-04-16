@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Login — Raver's Paradise{% endblock %}
+{% block content %}
+
+<div style="max-width:480px; margin:0 auto;">
+    <div class="card">
+        <div style="text-align:center; margin-bottom:1.5rem;">
+            <div style="font-size:3rem;">🔐</div>
+            <h1 style="font-size:1.8rem;">WELCOME BACK</h1>
+            <p style="color:rgba(255,255,255,0.5);">
+                Sign in to your Raver's Paradise account
+            </p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <label>USERNAME</label>
+            <input type="text" name="username" placeholder="Your username" autocomplete="off"/>
+
+            <label>PASSWORD</label>
+            <input type="password" name="password" placeholder="••••••••"/>
+
+            <button type="submit" class="btn btn-neon"
+                    style="width:100%; padding:0.8rem; margin-top:0.5rem;">
+                🎵 SIGN IN
+            </button>
+        </form>
+
+        <p style="text-align:center; margin-top:1.2rem;
+                  color:rgba(255,255,255,0.4); font-size:0.85rem;">
+            Don't have an account? Ask a festival admin to create one for you.
+        </p>
+    </div>
+</div>
+
+{% endblock %}

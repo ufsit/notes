@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Artists — Raver's Paradise{% endblock %}
+{% block content %}
+
+<h1>🎤 ARTIST PROFILES</h1>
+
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
+            gap:1rem; margin-bottom:2rem;">
+    {% set featured = [
+        {"icon": "🎷", "name": "GRiZ",           "genre": "Funk • Live Bass",    "color": "neon-orange"},
+        {"icon": "👁️", "name": "REZZ",           "genre": "Dark Techno • Hypno", "color": "neon-purple"},
+        {"icon": "🌌", "name": "LSDREAM",         "genre": "Cosmic Bass • Love",  "color": "neon-cyan"},
+        {"icon": "🕺", "name": "Dom Dolla",       "genre": "Tech House • Groove", "color": "neon-pink"},
+        {"icon": "🌸", "name": "Porter Robinson", "genre": "Future Bass • Art",   "color": "neon-pink"},
+        {"icon": "⭐", "name": "Kesha",           "genre": "Pop • EDM Collab",    "color": "neon-yellow"},
+        {"icon": "🕊️","name": "Galantis",        "genre": "Progressive House",   "color": "neon-green"},
+        {"icon": "💀", "name": "deadmau5",        "genre": "Progressive • Tech",  "color": "neon-pink"},
+        {"icon": "💥", "name": "Excision",        "genre": "Riddim • Bass",       "color": "neon-orange"},
+        {"icon": "🦋", "name": "Illenium",        "genre": "Melodic Dubstep",     "color": "neon-cyan"},
+        {"icon": "🦁", "name": "Griz",            "genre": "Funk • Electronic",   "color": "neon-orange"},
+        {"icon": "🌀", "name": "Subtronics",      "genre": "Riddim • Wobble",     "color": "neon-purple"}
+    ] %}
+    {% for artist in featured %}
+    <div class="card card-{{ artist.color }}" style="text-align:center; padding:1.2rem;">
+        <div style="font-size:2.5rem; margin-bottom:0.5rem;">{{ artist.icon }}</div>
+        <h3 class="text-{{ artist.color }}" style="font-size:0.9rem;">{{ artist.name }}</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.8rem;">{{ artist.genre }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2>ARTISTS</h2>
+    <pre>{{ content }}</pre>
+</div>
+
+{% endblock %}

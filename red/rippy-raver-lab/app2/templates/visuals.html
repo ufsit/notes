@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class='page-wrapper'>
+  <div class='page-header'>
+    <h1 class='rainbow-text'>Visual Stage</h1>
+    <p>Load and preview external visual sources for live sets and streams</p>
+  </div>
+  <div class='two-col'>
+    <div>
+      <div class='card'>
+        <div class='card-header'>
+          <span class='card-title'>Preview</span>
+          <span style='font-size:.75rem;color:var(--muted);word-break:break-all'>{{ url_val }}</span>
+        </div>
+        <div style='max-height:480px;overflow:auto;border-radius:6px'>
+          {# RFI / SSRF output — intentionally unescaped #}
+          {{ result | safe }}
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class='widget'>
+        <h4>Supported Sources</h4>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--c)'></div>Remote HTML pages</div>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--g)'></div>Canvas / WebGL</div>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--v)'></div>GLSL Shaders</div>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--y)'></div>Local assets</div>
+      </div>
+      <div class='widget'>
+        <h4>Featured Packs</h4>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--r)'></div>Neon Grid Pack</div>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--o)'></div>Acid Fractal Set</div>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--b)'></div>Deep Space Vol.2</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

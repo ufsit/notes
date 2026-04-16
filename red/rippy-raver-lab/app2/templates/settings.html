@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class='page-wrapper narrow'>
+  <div class='page-header'>
+    <h1 class='rainbow-text'>Account Settings</h1>
+    <p>Manage your DropZone account</p>
+  </div>
+  <div class='card'>
+    <div class='card-header'><span class='card-title'>Change Password</span></div>
+    {% if msg %}
+      <div class='alert {{ "alert-success" if success else "alert-error" }}'>{{ msg }}</div>
+    {% endif %}
+    {# No CSRF token — intentional vuln #}
+    <form method='POST' action='/settings'>
+      <div class='form-group'>
+        <label>New Password</label>
+        <input class='form-control' type='password' name='new_password' placeholder='Enter new password'>
+      </div>
+      <button type='submit' class='btn btn-primary'>Update Password</button>
+    </form>
+  </div>
+  <div class='card' style='margin-top:20px'>
+    <div class='card-header'><span class='card-title'>Account Info</span></div>
+    <p style='color:var(--muted);font-size:.875rem'>
+      Logged in as <strong style='color:var(--text)'>{{ username }}</strong>
+    </p>
+  </div>
+</div>
+{% endblock %}

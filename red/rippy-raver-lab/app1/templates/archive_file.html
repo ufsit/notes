@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ filename }} — Raver's Paradise{% endblock %}
+{% block content %}
+
+<h1>🗄️ {{ filename }}</h1>
+
+<div class="card">
+    <pre>{{ content }}</pre>
+</div>
+
+<a href="/archive" class="btn btn-cyan" style="margin-top:1rem;">
+    ← BACK TO ARCHIVE
+</a>
+
+{% endblock %}

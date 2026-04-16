@@ -1,0 +1,10 @@
+# Build both images
+docker build --no-cache -t sudobaron ./sudobaron
+docker build --no-cache -t pwnkit ./pwnkit
+
+# Run interactively
+docker run -it --rm -p 8080:5000 pwnkit
+docker run -it --rm -p 8081:5000 sudobaron
+
+
+docker exec -u root -it <container_name> /bin/bash

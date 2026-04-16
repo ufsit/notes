@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class='page-wrapper narrow'>
+  {% if flag11 %}
+    <div class='alert alert-success' style='margin-bottom:24px'>
+      🏁 {{ flag11 }}
+    </div>
+  {% endif %}
+  <div class='profile-hero'>
+    <div class='profile-big-avatar' style='{{ av_style | safe }}'>{{ initial }}</div>
+    <div class='profile-info'>
+      <h2>{{ username }}</h2>
+      <p>DropZone Community Member</p>
+      <div style='margin-top:8px'>
+        <span class='badge {{ "badge-red" if is_admin else "badge-purple" }}'>
+          {{ "Admin" if is_admin else "Member" }}
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class='card'>
+    <div class='card-header'><span class='card-title'>Activity</span></div>
+    <p style='color:var(--muted);font-size:.875rem'>Forum posts, messages, and interactions appear here.</p>
+  </div>
+</div>
+{% endblock %}

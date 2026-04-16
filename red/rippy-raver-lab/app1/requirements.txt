@@ -1,0 +1,6 @@
+flask
+pyjwt
+requests
+selenium
+markupsafe
+waitress

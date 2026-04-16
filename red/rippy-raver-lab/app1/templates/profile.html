@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Profile — Raver's Paradise{% endblock %}
+{% block content %}
+
+<h1>👤 RAVER PROFILE</h1>
+
+<div class="card card-neon-cyan">
+    <div style="display:flex; gap:2rem; align-items:flex-start; flex-wrap:wrap;">
+        <div style="font-size:5rem;">
+            {% if user.role == 'admin' %}👑{% else %}🎧{% endif %}
+        </div>
+        <div>
+            <h2>{{ user.username }}</h2>
+            <p style="color:var(--neon-yellow); font-family:'Orbitron',sans-serif;
+                      font-size:0.8rem; margin-bottom:0.5rem;">
+                {{ user.role | upper }} — Member #{{ user.id }}
+            </p>
+            <p style="color:rgba(255,255,255,0.7)">{{ user.bio }}</p>
+            <p style="color:rgba(255,255,255,0.4); margin-top:0.5rem;">{{ user.email }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>🎵 COMMUNITY PROFILES</h2>
+    <p style="color:rgba(255,255,255,0.5); margin-bottom:1rem;">
+        Browse other members in the community.
+    </p>
+    <div style="display:flex; gap:0.8rem; flex-wrap:wrap;">
+        {% for i in range(1,6) %}
+        <a href="/profile/{{ i }}"
+           class="btn {% if i == user.id %}btn-neon{% else %}btn-cyan{% endif %}">
+            Member {{ i }}{% if i == 1 %} 👑{% endif %}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

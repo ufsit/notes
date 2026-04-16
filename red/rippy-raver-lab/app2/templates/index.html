@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<div class='page-wrapper wide'>
+
+  {% if flag11 %}
+    <div class='alert alert-success' style='margin-bottom:28px'>
+      🏁 {{ flag11 }}
+    </div>
+  {% endif %}
+
+  <div class='hero'>
+    <div class='waveform' style='justify-content:center;margin-bottom:20px'>
+      {% for item in waveform %}
+        <span style='height:{{ item.h }}px;animation-delay:{{ item.delay }}s;background:linear-gradient(to top,{{ item.c1 }},{{ item.c2 }})'></span>
+      {% endfor %}
+    </div>
+    <h1 class='rainbow-text'>Welcome to DropZone</h1>
+    <p>The home of electronic music culture. Connect with artists, share your sound, and find your people.</p>
+    <a href='/forum' class='btn btn-primary'>Browse the Forum</a>
+    {% if not session.get('username') %}
+      &nbsp;&nbsp;<a href='/login' class='btn btn-outline'>Log In</a>
+    {% endif %}
+  </div>
+
+  <div class='stats-row'>
+    <div class='stat-card'><div class='stat-num rainbow-text'>2.4K</div><div class='stat-label'>Community Members</div></div>
+    <div class='stat-card'><div class='stat-num' style='color:var(--c)'>18K</div><div class='stat-label'>Forum Posts</div></div>
+    <div class='stat-card'><div class='stat-num' style='color:var(--g)'>340</div><div class='stat-label'>Artists Profiled</div></div>
+    <div class='stat-card'><div class='stat-num' style='color:var(--v)'>92</div><div class='stat-label'>Events This Month</div></div>
+  </div>
+
+  <div class='two-col'>
+    <div>
+      <div class='section-label'>Latest from the Forum</div>
+      {% if recent_posts %}
+        {% for post in recent_posts %}
+          <div class='post-card'>
+            <div class='post-meta'>
+              <div class='avatar' style='{{ post.av_style | safe }}'>{{ post.initial }}</div>
+              <span class='post-author'>{{ post.author }}</span>
+              <span class='post-time'>Forum · General</span>
+            </div>
+            {# XSS sink — intentionally unescaped #}
+            <div class='post-body'>{{ post.body | safe }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class='card'>
+          <p style='color:var(--muted);font-size:.875rem'>No posts yet — be the first to post in the <a href='/forum' style='color:var(--c)'>forum</a>.</p>
+        </div>
+      {% endif %}
+      <a href='/forum' class='btn btn-outline btn-sm'>View all posts →</a>
+    </div>
+    <div>
+      <div class='widget'>
+        <h4>Trending Artists</h4>
+        {% for name, color in trending %}
+          <div class='widget-item'>
+            <div class='widget-dot' style='background:{{ color | safe }}'></div>{{ name }}
+          </div>
+        {% endfor %}
+      </div>
+      <div class='widget'>
+        <h4>Upcoming Drops</h4>
+        {% for name, color, event in upcoming %}
+          <div class='widget-item'>
+            <div class='widget-dot' style='background:{{ color | safe }}'></div>{{ name }} — {{ event }}
+          </div>
+        {% endfor %}
+      </div>
+      <div class='widget'>
+        <h4>Quick Links</h4>
+        <div class='widget-item'><a href='/artists'   style='color:var(--text);text-decoration:none'>→ Artist Directory</a></div>
+        <div class='widget-item'><a href='/visuals?url=http://127.0.0.1:5000/visuals/default'   style='color:var(--text);text-decoration:none'>→ Visual Stage</a></div>
+        <div class='widget-item'><a href='/backstage' style='color:var(--text);text-decoration:none'>→ Backstage Portal</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

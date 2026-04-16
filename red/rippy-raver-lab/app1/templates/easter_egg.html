@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}🥚 Easter Egg — Raver's Paradise{% endblock %}
+{% block head %}
+<style>
+    @keyframes rainbow {
+        0%   { color: #ff0000; }
+        16%  { color: #ff8800; }
+        33%  { color: #ffff00; }
+        50%  { color: #00ff00; }
+        66%  { color: #0088ff; }
+        83%  { color: #ff00ff; }
+        100% { color: #ff0000; }
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes bounce {
+        0%,100% { transform: translateY(0) scale(1); }
+        50%     { transform: translateY(-30px) scale(1.3); }
+    }
+
+    .rainbow { animation: rainbow 1s linear infinite; }
+    .spin     { display: inline-block; animation: spin 2s linear infinite; }
+    .bounce   { display: inline-block; animation: bounce 1s ease-in-out infinite; }
+
+    .egg-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px,1fr));
+        gap: 0.5rem;
+        margin: 2rem 0;
+    }
+    .egg-emoji {
+        font-size: 2.5rem;
+        text-align: center;
+        animation: bounce 1s ease-in-out infinite;
+    }
+    .egg-emoji:nth-child(2n)   { animation-delay: 0.15s; }
+    .egg-emoji:nth-child(3n)   { animation-delay: 0.30s; }
+    .egg-emoji:nth-child(4n)   { animation-delay: 0.45s; }
+    .egg-emoji:nth-child(5n)   { animation-delay: 0.60s; }
+</style>
+{% endblock %}
+{% block content %}
+
+<div style="text-align:center; padding:3rem 0;">
+    <div class="spin" style="font-size:6rem; display:block; margin-bottom:1rem;">🥚</div>
+
+    <h1 class="rainbow" style="font-size:2.5rem; -webkit-text-fill-color: unset; background:none;">
+        YOU FOUND IT!!!
+    </h1>
+
+    <p style="font-size:1.2rem; margin: 1rem 0; color:var(--neon-cyan); font-family:'Orbitron',sans-serif; letter-spacing:3px;">
+        THE SECRET EASTER EGG SIDEQUEST
+    </p>
+
+    <div class="card" style="max-width:600px; margin:2rem auto; border-color:var(--neon-yellow);">
+        <h2 class="rainbow" style="-webkit-text-fill-color:unset; background:none;">🏆 ACHIEVEMENT UNLOCKED</h2>
+        <p style="font-size:1.1rem; margin: 1rem 0; color:var(--neon-green);">
+            <strong style="color:var(--neon-green)">flag8{3ast3r_3gg_h1dd3n_rav3r_qu3st_c0mpl3t3d}</strong>
+        </p>
+        <p style="color:rgba(255,255,255,0.6)">
+            You found the secret endpoint deep in the rave tunnels.
+            Ravers who reach this point truly understand PLUR.
+        </p>
+    </div>
+
+    <div class="egg-grid" style="max-width:700px; margin:0 auto;">
+        {% for emoji in ["🥚","🎧","🎵","💜","✨","🌈","🎉","🦋","🌸","🌌","🎷","👁️","🕺","⚡","🌟","🎶","💫","🎪","🎠","🎡"] %}
+        <div class="egg-emoji">{{ emoji }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="card" style="max-width:600px; margin:2rem auto; border-color:var(--neon-purple);">
+        <h3>🎵 A SECRET MESSAGE FROM THE RAVE</h3>
+        <blockquote style="color:rgba(255,255,255,0.8); font-style:italic; line-height:1.9; border-left:3px solid var(--neon-pink); padding-left:1rem; margin-top:1rem;">
+            "In the dark of the rave, between the bass drops and the laser beams,
+            there are those who seek not just the music — but the truth hidden within the code.
+            You are one of them. The plur is strong with you. 🙏"
+        </blockquote>
+        <p style="margin-top:1rem; color:var(--neon-yellow); font-family:'Orbitron',sans-serif; font-size:0.8rem; letter-spacing:2px;">
+            — THE RAVER ORACLE
+        </p>
+    </div>
+
+    <div style="margin-top:2rem;">
+        <p style="color:rgba(255,255,255,0.4); font-family:'Orbitron',sans-serif; font-size:0.75rem; letter-spacing:3px;">
+            P · L · U · R
+        </p>
+        <p style="color:rgba(255,255,255,0.3); font-size:0.8rem; margin-top:0.4rem;">
+            Peace · Love · Unity · Respect
+        </p>
+    </div>
+</div>
+
+{% endblock %}
