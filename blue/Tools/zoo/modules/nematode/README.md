@@ -1,2 +1,4 @@
 # Nematodes
 > Nematodes are considered **pioneer species** as they are often the first to colonize a barren environment. Like nematodes, this module is meant to explore initial enumeration of hosts upon successful logins.
+
+Initial scan (host discovery) of all subnets to create the network diagram in the main dashboard. After that, a secondary scan (port discovery) that scans all ports to find all services. Use service flag with nmap (-sV). Next, automated login to all machines for common network enumeration tasks like MAC adresses, IP addresses/routes, DNS configurations, hostnames, etc. Grab distribution name/version (uname -a, cat /etc/os-release) + package managers
