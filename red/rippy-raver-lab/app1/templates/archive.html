@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Archive — Raver's Paradise{% endblock %}
+{% block content %}
+
+<h1>🗄️ ARCHIVE</h1>
+
+<div class="card">
+    <h2>ARCHIVED FILES</h2>
+    <p style="color:rgba(255,255,255,0.5); margin-bottom:1rem;">
+        Historical festival documents, setlists, and records.
+    </p>
+    {% if files %}
+    <table>
+        <tr>
+            <th>FILENAME</th>
+        </tr>
+        {% for file in files %}
+        <tr>
+            <td>
+                <a href="/archive/{{ file }}"
+                   style="color:var(--neon-cyan)">{{ file }}</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p style="color:rgba(255,255,255,0.4)">No archived files found.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Admin — Logs{% endblock %}
+{% block content %}
+
+<h1>📋 SERVER LOGS</h1>
+
+<a href="/admin" class="btn btn-cyan" style="margin-bottom:1.5rem; display:inline-block;">
+    ← BACK TO ADMIN
+</a>
+
+<div class="card">
+    <pre style="max-height:600px; overflow-y:auto;">{{ logs }}</pre>
+</div>
+
+{% endblock %}

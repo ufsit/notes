@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Activity Log — Raver's Paradise{% endblock %}
+{% block content %}
+
+<h1>📋 ACCOUNT ACTIVITY</h1>
+
+<div class="card">
+    <h2>RECENT ACTIVITY</h2>
+    <pre style="max-height:400px; overflow-y:auto;">{{ logs }}</pre>
+</div>
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel — Raver's Paradise{% endblock %}
+{% block content %}
+
+<h1>👑 ADMIN PANEL</h1>
+
+<div class="alert alert-warning">
+    <strong style="color:var(--neon-yellow)">flag1{sql1_4dm1n_4cc3ss_rav3r_pwn3d}</strong>
+</div>
+
+<div class="card card-neon-pink">
+    <h2>⚙️ SITE MANAGEMENT</h2>
+    <p style="color:rgba(255,255,255,0.5); margin-bottom:1rem;">
+        Welcome to the admin control panel. You have full access to all site settings.
+    </p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
+                gap:1rem; margin-top:1rem;">
+        <a href="/dashboard" style="text-decoration:none;">
+            <div class="card card-neon-cyan" style="cursor:pointer;">
+                <h3>👥 USERS</h3>
+                <p style="color:rgba(255,255,255,0.5)">Manage community members.</p>
+            </div>
+        </a>
+        <a href="/admin/notes" style="text-decoration:none;">
+            <div class="card card-neon-purple" style="cursor:pointer;">
+                <h3>📝 NOTES</h3>
+                <p style="color:rgba(255,255,255,0.5)">View all user notes.</p>
+            </div>
+        </a>
+        <a href="/admin/uploads" style="text-decoration:none;">
+            <div class="card card-neon-orange" style="cursor:pointer;">
+                <h3>📤 UPLOADS</h3>
+                <p style="color:rgba(255,255,255,0.5)">Manage uploaded files.</p>
+            </div>
+        </a>
+        <a href="/admin/logs" style="text-decoration:none;">
+            <div class="card card-neon-green" style="cursor:pointer;">
+                <h3>📋 LOGS</h3>
+                <p style="color:rgba(255,255,255,0.5)">View server activity logs.</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <h2>👥 ALL USERS</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>USERNAME</th>
+            <th>EMAIL</th>
+            <th>ROLE</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td style="color:var(--neon-yellow)">{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td style="color:rgba(255,255,255,0.5)">{{ user.email }}</td>
+            <td>
+                {% if user.role == 'admin' %}
+                    <span class="role-admin">{{ user.role }}</span>
+                {% else %}
+                    <span class="role-user">{{ user.role }}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}

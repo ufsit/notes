@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class='page-wrapper narrow'>
+  <div class='page-header'>
+    <h1 class='rainbow-text'>Artist Token</h1>
+    <p>Your signed access token for backstage verification</p>
+  </div>
+  <div class='card'>
+    <div class='card-header'><span class='card-title'>Your Token</span></div>
+    <p style='color:var(--muted);font-size:.85rem;margin-bottom:12px'>
+      Submit this token to the backstage endpoint to verify your identity.
+    </p>
+    <pre style='font-size:.75rem;word-break:break-all;white-space:pre-wrap;margin-bottom:18px'>{{ token }}</pre>
+    <form method='POST' action='/backstage' id='tokenForm'>
+      <input type='hidden' name='token' value='{{ token }}'>
+      <button type='submit' class='btn btn-primary'>Submit to Backstage</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

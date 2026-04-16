@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Live Streams — Raver's Paradise{% endblock %}
+{% block content %}
+
+<h1>🌐 LIVE STREAM PREVIEW</h1>
+
+<div class="card">
+    <h2>LOAD A STREAM OR PAGE</h2>
+    <p style="color:rgba(255,255,255,0.5); margin-bottom:1rem;">
+        Enter a URL to preview a live stream, artist page, or festival site.
+    </p>
+    <form method="POST">
+        <label>URL</label>
+        <input type="url" name="url" value="{{ url }}"
+               placeholder="https://artist-stream.com/live"/>
+        <button type="submit" class="btn btn-cyan">🚀 LOAD PREVIEW</button>
+    </form>
+</div>
+
+{% if result %}
+<div class="card card-neon-green">
+    <h2>PREVIEW</h2>
+    <pre>{{ result }}</pre>
+</div>
+{% endif %}
+
+{% endblock %}

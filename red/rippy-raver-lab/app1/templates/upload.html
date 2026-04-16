@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Upload — Raver's Paradise{% endblock %}
+{% block content %}
+
+<h1>📤 SHARE YOUR ARTWORK</h1>
+
+<div class="card">
+    <h2>UPLOAD A FESTIVAL FLYER</h2>
+    <p style="color:rgba(255,255,255,0.5); margin-bottom:1rem;">
+        Share your festival artwork, flyers, and photos with the community.
+        Accepted formats: <strong style="color:var(--neon-cyan)">.png, .jpg, .gif</strong>
+    </p>
+    <form method="POST" enctype="multipart/form-data">
+        <label>SELECT FILE</label>
+        <input type="file" name="file" accept=".png,.jpg,.jpeg,.gif"
+               style="padding:0.5rem; margin-bottom:1rem;"/>
+        <button type="submit" class="btn btn-neon">📤 UPLOAD</button>
+    </form>
+
+    {% if message %}
+    <div class="alert {% if '✅' in message %}alert-success{% else %}alert-danger{% endif %}"
+         style="margin-top:1rem;">
+        {{ message }}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

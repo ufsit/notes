@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Admin — Uploads{% endblock %}
+{% block content %}
+
+<h1>📤 MANAGE UPLOADS</h1>
+
+<a href="/admin" class="btn btn-cyan" style="margin-bottom:1.5rem; display:inline-block;">
+    ← BACK TO ADMIN
+</a>
+
+{% if message %}
+<div class="alert {% if '✅' in message %}alert-success{% else %}alert-danger{% endif %}">
+    {{ message }}
+</div>
+{% endif %}
+
+<div class="card">
+    {% if files %}
+    <table>
+        <tr>
+            <th>FILENAME</th>
+            <th>VIEW</th>
+            <th>DELETE</th>
+        </tr>
+        {% for file in files %}
+        <tr>
+            <td style="color:var(--neon-cyan)">{{ file }}</td>
+            <td>
+                <a href="/uploads/{{ file }}"
+                   class="btn btn-cyan"
+                   style="padding:0.2rem 0.6rem; font-size:0.65rem;"
+                   target="_blank">VIEW</a>
+            </td>
+            <td>
+                <form method="POST" action="/admin/uploads/delete/{{ file }}"
+                      style="display:inline;">
+                    <button type="submit"
+                            class="btn btn-neon"
+                            style="padding:0.2rem 0.6rem; font-size:0.65rem;">
+                        DELETE
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p style="color:rgba(255,255,255,0.4)">No uploaded files found.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

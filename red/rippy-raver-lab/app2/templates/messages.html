@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class='page-wrapper narrow'>
+  <div class='page-header'>
+    <h1 class='rainbow-text'>Messages</h1>
+    <p>Send messages to the community</p>
+  </div>
+  {% if msg %}
+    <div class='alert alert-success'>✓ {{ msg }}</div>
+  {% endif %}
+  <div class='card' style='margin-bottom:24px'>
+    <div class='card-header'><span class='card-title'>New Message</span></div>
+    <form method='POST'>
+      <div class='form-group'>
+        <label>Message</label>
+        <textarea class='form-control' name='body' rows='4' placeholder='Type your message...'></textarea>
+      </div>
+      <button type='submit' class='btn btn-primary'>Send Message</button>
+    </form>
+  </div>
+  <div class='section-label'>Inbox</div>
+  {% if messages %}
+    {% for m in messages %}
+      <div class='post-card'>
+        <div class='post-meta'>
+          <div class='avatar' style='{{ m.av_style | safe }}'>{{ m.initial }}</div>
+          <div>
+            <div class='post-author'>{{ m.author }}</div>
+            <div style='font-size:.75rem;color:var(--muted)'>Direct Message</div>
+          </div>
+        </div>
+        {# XSS sink — intentionally unescaped for CSRF chain #}
+        <div class='post-body'>{{ m.body | safe }}</div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class='card'><p style='color:var(--muted);font-size:.875rem'>No messages yet.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

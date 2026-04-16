@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class='page-wrapper wide'>
+  <div class='page-header'>
+    <h1 class='rainbow-text'>Community Forum</h1>
+    <p>Share, connect, and vibe with the community</p>
+  </div>
+  <div class='two-col'>
+    <div>
+      {% if msg %}
+        <div class='alert alert-success'>✓ {{ msg }}</div>
+      {% endif %}
+      <div class='card' style='margin-bottom:24px'>
+        <div class='card-header'><span class='card-title'>New Post</span></div>
+        <form method='POST'>
+          <div class='form-group'>
+            <label>Post Content</label>
+            <textarea class='form-control' name='body' rows='4' placeholder='What&apos;s on your mind?'></textarea>
+          </div>
+          <button type='submit' class='btn btn-primary'>Publish Post</button>
+        </form>
+      </div>
+      <div class='section-label'>Recent Posts</div>
+      {% if posts %}
+        {% for post in posts %}
+          <div class='post-card'>
+            <div class='post-meta'>
+              <div class='avatar' style='{{ post.av_style | safe }}'>{{ post.initial }}</div>
+              <div>
+                <div class='post-author'>{{ post.author }}</div>
+                <div style='font-size:.75rem;color:var(--muted)'>General Discussion</div>
+              </div>
+              <span class='post-time'>Forum</span>
+            </div>
+            {# XSS sink — intentionally unescaped #}
+            <div class='post-body'>{{ post.body | safe }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class='card'><p style='color:var(--muted);font-size:.875rem'>No posts yet.</p></div>
+      {% endif %}
+    </div>
+    <div>
+      <div class='widget'>
+        <h4>Forum Categories</h4>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--r)'></div>General Discussion</div>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--c)'></div>Music Releases</div>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--g)'></div>Event Reports</div>
+        <div class='widget-item'><div class='widget-dot' style='background:var(--v)'></div>Production Talk</div>
+      </div>
+      <div class='widget'>
+        <h4>Posting Guidelines</h4>
+        <p style='font-size:.8rem;color:var(--muted);line-height:1.6'>
+          Be respectful. Share your sound.<br>HTML is supported for rich posts.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

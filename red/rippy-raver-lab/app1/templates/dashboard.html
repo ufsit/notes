@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Raver's Paradise{% endblock %}
+
+{% block head %}
+<style>
+    .role-admin { color: var(--neon-pink); }
+    .role-user  { color: var(--neon-green); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>🎛️ DASHBOARD</h1>
+<p style="color:rgba(255,255,255,0.6);">
+    Welcome back, <span style="color:var(--neon-yellow)">{{ session.username }}</span>!
+</p>
+
+<hr class="divider"/>
+
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
+            gap:1.2rem; margin-bottom:2rem;">
+    <a href="/notes" style="text-decoration:none">
+        <div class="card card-neon-cyan" style="cursor:pointer;">
+            <h3>📝 MY NOTES</h3>
+            <p style="color:rgba(255,255,255,0.6)">
+                View and search your personal festival notes.
+            </p>
+        </div>
+    </a>
+    <a href="/upload" style="text-decoration:none">
+        <div class="card card-neon-orange" style="cursor:pointer;">
+            <h3>📤 SHARE FLYERS</h3>
+            <p style="color:rgba(255,255,255,0.6)">
+                Upload and share your festival artwork with the community.
+            </p>
+        </div>
+    </a>
+    <a href="/profile/{{ session.user_id }}" style="text-decoration:none">
+        <div class="card card-neon-purple" style="cursor:pointer;">
+            <h3>👤 MY PROFILE</h3>
+            <p style="color:rgba(255,255,255,0.6)">
+                View and manage your raver profile.
+            </p>
+        </div>
+    </a>
+    {% if session.role == 'admin' %}
+    <a href="/admin" style="text-decoration:none">
+        <div class="card card-neon-pink" style="cursor:pointer;">
+            <h3>👑 ADMIN PANEL</h3>
+            <p style="color:rgba(255,255,255,0.6)">
+                Manage the site and view all content.
+            </p>
+        </div>
+    </a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>👥 COMMUNITY MEMBERS</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>USERNAME</th>
+            <th>ROLE</th>
+            <th>PROFILE</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td style="color:var(--neon-yellow)">{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>
+                {% if user.role == 'admin' %}
+                    <span class="role-admin">{{ user.role }}</span>
+                {% else %}
+                    <span class="role-user">{{ user.role }}</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="/profile/{{ user.id }}"
+                   class="btn btn-cyan"
+                   style="padding:0.2rem 0.6rem; font-size:0.65rem;">VIEW</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}
