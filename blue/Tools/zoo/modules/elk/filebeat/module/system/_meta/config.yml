@@ -1,0 +1,22 @@
+- module: system
+  # Syslog
+  syslog:
+    enabled: false
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    #var.paths:
+
+    # Use journald to collect system logs
+    #var.use_journald: false
+
+  # Authorization logs
+  auth:
+    enabled: false
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    #var.paths:
+
+    # Use journald to collect auth logs
+    #var.use_journald: false

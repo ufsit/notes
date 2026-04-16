@@ -1,0 +1,9 @@
+type: filestream
+id: foo-multibad
+paths:
+  - /tmp
+exclude_files: [".gz$"]
+
+fields:
+  service.name: "foo"
+fields_under_root: true

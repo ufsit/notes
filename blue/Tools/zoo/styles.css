@@ -1,0 +1,255 @@
+:root {
+    --bg-start: ##f6f6f6;
+    --bg-end: #0f133b;
+ 
+    --fg-color: rgba(0,0,0,0.9)
+}
+ 
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+ 
+html {
+    color: var(--fg-color);
+ 
+    font-family: "Nunito", "sans-serif";
+    font-weight: 400;
+    font-size: 18px;
+}
+ 
+body {
+ 
+    padding: 2rem;
+    height: 100%;
+    background: linear-gradient(
+        45deg,
+        var(--bg-start), 
+        var(--bg-end)
+    );
+}
+ 
+header {
+    display: flex;
+    justify-content: center;
+    background-color: var(--bg-end);
+    color: #f6f6f6;
+    margin-top: -40px;
+    margin-left: -36px;
+    margin-right: -36px;
+    padding: 10px 20px 10px;
+}
+ 
+h1 {
+    display: flex;
+    justify-content: center;
+}
+ 
+.autocomplete-list {
+    position: absolute;
+    width: calc(100% - var(--padding) * 2);
+    max-height: 150px;
+    overflow-y: auto;
+    margin-top: 8px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+    top: calc(100% - 8px); /* Add this line */
+    left: 0; /* Add this line */
+}
+ 
+.autocomplete-item {
+    padding: 8px 16px;
+    cursor: pointer;
+}
+ 
+.autocomplete-item:hover {
+    background-color: #f0f0f0;
+}
+ 
+ 
+.bulk {
+    display: flex;
+    justify-content: space-evenly;
+    margin-left: -36px;
+    margin-right: -36px;
+    width: 100%+36px;
+    height: 80vh;
+}
+ 
+.clickable {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    width: 150px;
+}
+ 
+.info-box {
+    background-color: rgb(0,0,0,0.75);
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
+    padding: 10px 15px 20px 15px;
+    margin-top: -27px;
+    color: #f6f6f6
+}
+ 
+.arrow {
+    cursor: pointer;
+    display: block;
+}
+ 
+.beeg {
+    min-height: 500px;
+    width: 250px;
+}
+.beeg > * {
+    display: flex;
+    justify-content: center;
+}
+.beeg > p {
+    padding-top: 5px;
+    padding-bottom: 15px;
+}
+.beeg > p > a {
+    padding-top: 15px;
+}
+.beeg > ul {
+    padding-top: 15px;
+    display: block;
+}
+.beeg > ul > li {
+    margin-left: 15px;
+}
+.beeg > ul > li > input {
+    background-color: transparent;
+    border-style: hidden;
+    color: #f6f6f6;
+    font-family: inherit;
+    font-size: inherit;
+}
+.beeg > ul > li > select {
+    background-color: transparent;
+    border-style: hidden;
+    color: #f6f6f6;
+    font-family: inherit;
+    font-size: inherit;
+}
+.checkboxgroup{
+    width: 220px;
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 11px;
+    padding-bottom: 5px;
+}
+.checkboxgroup legend{
+    padding-left: 5px;
+    padding-right: 5px;
+}
+.custom-checkbox{
+    white-space: nowrap;
+    display: inline-flex;
+    justify-content: space-around;
+    padding-left: 5px;
+}
+.custom-checkbox span{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+ 
+.smol {
+    height: 50px;
+    width: 50px;
+}
+.smol > * {
+    display: none;
+}
+ 
+.left {
+    position: absolute;
+    left: 0px;
+}
+ 
+.right {
+    position: absolute;
+    right: 0px;
+}
+ 
+.logo {
+    position: absolute;
+    left: 20px;
+    align-items: center;
+    font-size: 2rem;
+}
+ 
+.logo > img {
+    height: 4rem;
+    margin-right: 1rem;
+    margin-top: -1rem;
+    margin-left: -1.5rem;
+    cursor: pointer !important;
+}
+ 
+.graph {
+    flex: 1;
+    height: 100%;
+}
+ 
+.search {
+    --padding: 14px;
+ 
+    position: relative;
+    width: max-content;
+    display: flex;
+    align-items: center;
+    padding: var(--padding);
+    border-radius: 28px;
+    background: #f6f6f6;
+    transition: box-shadow 0.25s;
+}
+ 
+.search:focus-within {
+    box-shadow: 0 0 4px rgb(31, 185, 0);
+}
+ 
+.search-input {
+    font-size: 16px;
+    font-family: 'Courier New', Courier, monospace;
+    color: #333333;
+    margin-left: var(--padding);
+ 
+    outline: none;
+    border: none;
+    background: transparent;
+    width: 600px;
+}
+ 
+.search-input::placeholder,
+.search-icon {
+    color: rgba(0,0,0,0.25)
+}
+ 
+.sep-line {
+    border: 1px solid rgb(33, 80, 27);
+    border-bottom: none;
+    border-top: none;
+    margin: 1px 3px 0px 3px;
+}
+ 
+.toggle {
+    display: flex;
+    justify-content: space-between;
+}
+ 
+.toggle-options {
+    display: flex;
+    justify-content: space-around;
+    background-color: rgb(105,105,105, 0.75);
+    padding: 0px 14px 5px 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+}
+.wrap {
+    word-wrap: break-word;
+}

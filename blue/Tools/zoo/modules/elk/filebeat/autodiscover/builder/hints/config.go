@@ -1,0 +1,100 @@
+// Licensed to Elasticsearch B.V. under one or more contributor
+// license agreements. See the NOTICE file distributed with
+// this work for additional information regarding copyright
+// ownership. Elasticsearch B.V. licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+package hints
+
+import (
+	conf "github.com/elastic/elastic-agent-libs/config"
+)
+
+type config struct {
+	Key           string  `config:"key"`
+	DefaultConfig *conf.C `config:"default_config"`
+}
+
+func defaultConfig() config {
+	defaultCfgRaw := map[string]interface{}{
+		"type": "filestream",
+		"id":   "container-logs-${data.container.id}",
+		"prospector": map[string]interface{}{
+			"scanner": map[string]interface{}{
+				"fingerprint.enabled": true,
+				"symlinks":            true,
+			},
+		},
+		// Prevent partial ingestion when containers stop.
+		// Kubernetes is too eager to remove the log files, so Filebeat,
+		// sometimes, does not have enough time to ingest the whole file
+		// before it is removed.
+		"close.on_state_change.removed": false,
+		"file_identity.fingerprint":     nil,
+		// Enable take over mode to migrate state from the previous
+		// configuration version. This prevents re-ingestion of existing
+		// files.
+		"take_over": map[string]any{
+			"enabled": true,
+			"from_ids": []string{
+				"kubernetes-container-logs-${data.container.id}",
+			},
+		},
+		"parsers": []interface{}{
+			map[string]interface{}{
+				"container": map[string]interface{}{
+					"stream": "all",
+					"format": "auto",
+				},
+			},
+		},
+		"paths": []string{
+			"/var/log/containers/*-${data.container.id}.log",             // Kubernetes
+			"/var/lib/docker/containers/${data.container.id}/*-json.log", // Docker
+		},
+	}
+	defaultCfg, _ := conf.NewConfigFrom(defaultCfgRaw)
+	return config{
+		Key:           "logs",
+		DefaultConfig: defaultCfg,
+	}
+}
+
+func (c *config) Unpack(from *conf.C) error {
+	tmpConfig := struct {
+		Key string `config:"key"`
+	}{
+		Key: c.Key,
+	}
+	if err := from.Unpack(&tmpConfig); err != nil {
+		return err
+	}
+
+	if config, err := from.Child("default_config", -1); err == nil {
+		fields := config.GetFields()
+		if len(fields) == 1 && fields[0] == "enabled" {
+			// only enabling/disabling default config:
+			if err := c.DefaultConfig.Merge(config); err != nil {
+				return err
+			}
+		} else {
+			// full config provided, discard default. It must be a clone of the
+			// given config otherwise it could be updated across multiple inputs.
+			c.DefaultConfig = conf.MustNewConfigFrom(config)
+		}
+	}
+
+	c.Key = tmpConfig.Key
+	return nil
+}

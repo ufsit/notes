@@ -1,0 +1,11 @@
+- key: apache
+  title: "Apache"
+  description: >
+    Apache Module
+  short_config: true
+  fields:
+    - name: apache
+      type: group
+      description: >
+        Apache fields.
+      fields:

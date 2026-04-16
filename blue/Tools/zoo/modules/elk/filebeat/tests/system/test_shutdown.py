@@ -1,0 +1,158 @@
+import gzip
+import os
+import platform
+import time
+import unittest
+from filebeat import BaseTest
+
+"""
+Tests that Filebeat shuts down cleanly.
+"""
+
+
+class Test(BaseTest):
+
+    @unittest.skipIf(platform.platform().startswith("Windows-7"),
+                     "Flaky test: https://github.com/elastic/beats/issues/22795")
+    def test_shutdown(self):
+        """
+        Test starting and stopping Filebeat under load.
+        """
+
+        self.nasa_logs()
+
+        self.render_config_template(
+            path=os.path.abspath(self.working_dir) + "/log/*",
+            ignore_older="1h"
+        )
+        for i in range(1, 5):
+            proc = self.start_beat(logging_args=["-e", "-v"])
+
+            # Flaky on MacOS, see https://github.com/elastic/beats/issues/39613#issuecomment-2158812325
+            # we need to wait a bit longer for filebeat to start
+            if platform.system() == "Darwin":
+                time.sleep(10)
+            else:
+                time.sleep(.5)
+            proc.check_kill_and_wait()
+
+    @unittest.skip("Skipped as flaky: https://github.com/elastic/beats/issues/14647")
+    def test_shutdown_wait_ok(self):
+        """
+        Test stopping filebeat under load: wait for all events being published.
+        """
+
+        self.nasa_logs()
+
+        self.render_config_template(
+            path=os.path.abspath(self.working_dir) + "/log/*",
+            ignore_older="1h",
+            shutdown_timeout="10s",
+        )
+        filebeat = self.start_beat()
+
+        # Wait until first flush
+        self.wait_until(
+            lambda: self.log_contains_count("Publish event") > 200,
+            max_timeout=15)
+
+        filebeat.check_kill_and_wait()
+
+        self.get_log()
+        self.wait_log_contains(
+            "Shutdown output timer started.",
+            max_timeout=15)
+
+        self.wait_log_contains(
+            "Continue shutdown: All enqueued events being published.",
+            max_timeout=15)
+
+        # validate registry entry offset matches last published event
+        registry = self.get_registry()
+        outputs = self.read_output()
+        offset = registry[0]["offset"]
+        assert len(registry) == 1
+
+        # we allow for a potential race in the harvester shutdown here.
+        # In some cases the registry offset might match the penultimate offset.
+
+        eol_offset = 1
+        if os.name == "nt":
+            eol_offset += 1
+
+        assert (offset == (outputs[-1]["log.offset"] + eol_offset + len(outputs[-1]["message"])) or
+                offset == (outputs[-2]["log.offset"] + eol_offset + len(outputs[-2]["message"])))
+
+    def test_shutdown_wait_timeout(self):
+        """
+        Test stopping filebeat under load: allow early shutdown.
+        """
+
+        self.nasa_logs()
+
+        # Use 'localhost' so connection is refused instantly
+        self.render_config_template(
+            logstash={"host": "localhost:12345", "timeout": 1},
+            path=os.path.abspath(self.working_dir) + "/log/*",
+            ignore_older="1h",
+            shutdown_timeout="1s",
+        )
+        filebeat = self.start_beat()
+
+        # Wait until it tries the first time to publish
+        self.wait_until(
+            lambda: self.log_contains("Failed to connect"),
+            max_timeout=15)
+
+        filebeat.check_kill_and_wait()
+
+        self.wait_until(
+            lambda: self.log_contains("Shutdown output timer started."),
+            max_timeout=15)
+
+        self.wait_log_contains(
+            "Continue shutdown: Time out waiting for events being published.",
+            max_timeout=15)
+
+        # check registry being really empty
+        reg = self.get_registry()
+        assert reg == [] or reg[0]["offset"] == 0
+
+    def nasa_logs(self):
+
+        # Uncompress the nasa log file.
+        nasa_log = os.path.join(self.beat_path, "tests", "files", "logs", "nasa-50k.log")
+        if not os.path.isfile(nasa_log):
+            with gzip.open(nasa_log + ".gz", 'rb') as infile:
+                with open(nasa_log, 'w') as outfile:
+                    for line in infile:
+                        outfile.write(line.decode("utf-8"))
+        os.mkdir(self.working_dir + "/log/")
+        self.copy_files(["logs/nasa-50k.log"],
+                        target_dir="log")
+
+    def test_stopping_empty_path(self):
+        """
+        Test filebeat stops properly when 1 input has an invalid config.
+        """
+
+        input_raw = """
+- type: log
+  allow_deprecated_use: true
+  paths: []
+"""
+
+        self.render_config_template(
+            path=os.path.abspath(self.working_dir) + "/log/*",
+            input_raw=input_raw,
+        )
+        filebeat = self.start_beat()
+        time.sleep(2)
+
+        # Wait until first flush
+        msg = "No paths were defined for input"
+        self.wait_until(
+            lambda: self.log_contains_count(msg) >= 1,
+            max_timeout=5)
+
+        filebeat.check_wait(exit_code=1)
