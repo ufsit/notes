@@ -7,12 +7,69 @@
   </div>
 
   {% if flag %}
-    <div class='alert alert-success'>
-      ✓ Access granted as <strong>{{ claimed_user }}</strong> &nbsp;·&nbsp; 🏁 {{ flag }}
-    </div>
-  {% endif %}
+    <div style='text-align:center;margin-bottom:28px'>
+      <div style='
+        background: linear-gradient(135deg, #0d0020, #000d1a);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 48px 40px;
+        position: relative;
+        overflow: hidden;
+      '>
+        <!-- rainbow glow blobs -->
+        <div style='position:absolute;inset:0;pointer-events:none;
+          background:
+            radial-gradient(ellipse at 20% 50%, rgba(170,0,255,.2) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 50%, rgba(0,229,255,.15) 0%, transparent 60%),
+            radial-gradient(ellipse at 50% 100%, rgba(255,51,102,.12) 0%, transparent 50%);'>
+        </div>
 
-  {% if msg %}
+        <!-- waveform -->
+        <div style='display:flex;align-items:center;justify-content:center;gap:3px;height:32px;margin-bottom:24px'>
+          {% for h, c1, c2, d in [
+            (28,'#3d5afe','#aa00ff','0s'),
+            (18,'#aa00ff','#ff3366','.08s'),
+            (34,'#00e5ff','#3d5afe','.16s'),
+            (22,'#00ff88','#00e5ff','.24s'),
+            (38,'#ffe600','#00ff88','.32s'),
+            (14,'#ff6b00','#ffe600','.40s'),
+            (30,'#ff3366','#ff6b00','.48s'),
+            (24,'#aa00ff','#ff3366','.56s'),
+            (36,'#00e5ff','#aa00ff','.64s'),
+            (16,'#3d5afe','#00e5ff','.72s'),
+            (32,'#00ff88','#3d5afe','.80s'),
+            (20,'#ffe600','#00ff88','.88s'),
+          ] %}
+            <span style='display:block;width:3px;border-radius:2px;height:{{ h }}px;
+              background:linear-gradient(to top,{{ c1 }},{{ c2 }});
+              animation:wv .6s ease-in-out {{ d }} infinite alternate'></span>
+          {% endfor %}
+        </div>
+
+        <div style='font-size:2.5rem;margin-bottom:8px'>🎟️</div>
+        <h2 style='font-family:Righteous,cursive;font-size:1.6rem;margin-bottom:8px;position:relative'>
+          <span class='rainbow-text'>Backstage Access Granted</span>
+        </h2>
+        <p style='color:var(--muted);font-size:.9rem;margin-bottom:24px;position:relative'>
+          Identity verified as <strong style='color:var(--text)'>{{ claimed_user }}</strong>
+        </p>
+
+        <div style='
+          background: rgba(0,255,136,.06);
+          border: 1px solid rgba(0,255,136,.2);
+          border-radius: 10px;
+          padding: 18px 24px;
+          position: relative;
+          margin: 0 auto;
+          max-width: 480px;
+        '>
+          <p style='font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px'>Flag</p>
+          <p style='font-family:Courier New,monospace;font-size:1rem;color:var(--g);word-break:break-all'>{{ flag }}</p>
+        </div>
+      </div>
+    </div>
+
+  {% elif msg %}
     <div class='alert alert-error'>{{ msg }}</div>
   {% endif %}
 

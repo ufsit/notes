@@ -425,7 +425,7 @@ def upload():
                 save_path = os.path.join(UPLOAD_DIR, filename)
                 f.save(save_path)
                 log_event(f"File uploaded: {filename} by {session.get('username')}")
-                message = f"✅ '{filename}' uploaded successfully!"
+                message = f"✅ '{filename}' uploaded to /uploads/{filename} successfully!"
         else:
             message = "No file selected."
 
