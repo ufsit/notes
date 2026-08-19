@@ -11,8 +11,7 @@ Performs brute-force password guessing against ssh servers.
 
 ---
 -- @usage
---   nmap -p 22 --script ssh-brute --script-args userdb=users.lst,passdb=pass.lst \
---       --script-args ssh-brute.timeout=4s <target>
+--   nmap -p 22 --script ssh-brute --script-args userdb=users.lst,passdb=pass.lst,ssh-brute.timeout=4s <target>
 --
 -- @output
 -- 22/ssh open  ssh
@@ -31,7 +30,7 @@ categories = {
   'intrusive',
 }
 
-portrule = shortport.port_or_service(22, 'ssh')
+portrule = shortport.ssh
 
 local arg_timeout = stdnse.get_script_args(SCRIPT_NAME .. ".timeout") or "5s"
 

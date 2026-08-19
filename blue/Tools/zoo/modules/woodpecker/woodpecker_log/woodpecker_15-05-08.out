@@ -1,0 +1,11 @@
+[----- WOODPECKER: 127.0.0.1 -----]
+  [ ] rejected root:root
+  [ ] rejected root:toor
+  [ ] rejected root:password
+  [ ] rejected admin:admin
+  [ ] rejected admin:password
+  [ ] rejected user:user
+  [ ] rejected pi:raspberry
+  [ ] rejected ubuntu:ubuntu
+  [ ] rejected guest:guest
+  [ ] rejected test:test

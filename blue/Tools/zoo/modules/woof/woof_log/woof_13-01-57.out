@@ -1,0 +1,14 @@
+[----- MEOW: 127.0.0.1 -----]
+Warning: Permanently added '[127.0.0.1]:2222' (ED25519) to the list of known hosts.
+===== SSHD CONFIG =====
+PermitRootLogin: (default)
+PasswordAuthentication no
+Port: (default 22)
+
+===== WORLD-WRITABLE FILES IN /etc =====
+
+===== EMPTY-PASSWORD ACCOUNTS =====
+(shadow not readable)
+
+===== .rhosts / hosts.equiv =====
+(scan complete)

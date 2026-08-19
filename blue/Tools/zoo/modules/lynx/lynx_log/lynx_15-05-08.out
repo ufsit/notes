@@ -1,0 +1,87 @@
+[----- MEOW: 127.0.0.1 -----]
+Warning: Permanently added '[127.0.0.1]:2222' (ED25519) to the list of known hosts.
+===== /etc/pam.d LISTING =====
+total 96
+drwxr-xr-x  2 nobody nogroup 4096 Aug 12 20:13 .
+drwxr-xr-x 97 nobody nogroup 4096 Aug 19 12:26 ..
+-rw-r--r--  1 nobody nogroup  384 Nov 11  2021 chfn
+-rw-r--r--  1 nobody nogroup   92 Nov 11  2021 chpasswd
+-rw-r--r--  1 nobody nogroup  581 Nov 11  2021 chsh
+-rw-r--r--  1 nobody nogroup 1208 Aug 12 20:03 common-account
+-rw-r--r--  1 nobody nogroup 1242 Aug 12 20:03 common-auth
+-rw-r--r--  1 nobody nogroup 1620 Aug 12 20:03 common-password
+-rw-r--r--  1 nobody nogroup 1427 Aug 12 20:03 common-session
+-rw-r--r--  1 nobody nogroup 1435 Aug 12 20:03 common-session-noninteractive
+-rw-r--r--  1 nobody nogroup  606 Mar 17  2021 cron
+-rw-r--r--  1 nobody nogroup 4126 Mar 14  2022 login
+-rw-r--r--  1 nobody nogroup   92 Nov 11  2021 newusers
+-rw-r--r--  1 nobody nogroup  520 Aug 11  2020 other
+-rw-r--r--  1 nobody nogroup   92 Nov 11  2021 passwd
+-rw-r--r--  1 nobody nogroup  270 Feb 26  2022 polkit-1
+-rw-r--r--  1 nobody nogroup  143 Feb 20  2022 runuser
+-rw-r--r--  1 nobody nogroup  138 Feb 20  2022 runuser-l
+-rw-r--r--  1 nobody nogroup 2133 Apr 11  2025 sshd
+-rw-r--r--  1 nobody nogroup 2259 Feb 20  2022 su
+-rw-r--r--  1 nobody nogroup  137 Feb 20  2022 su-l
+-rw-r--r--  1 nobody nogroup  330 Feb  8  2022 sudo
+-rw-r--r--  1 nobody nogroup  315 Feb  8  2022 sudo-i
+
+===== SUSPICIOUS DIRECTIVES (permit/nullok/exec) =====
+/etc/pam.d/other:7:#used.  If you really want nothing to happen then use pam_permit.so or
+/etc/pam.d/common-auth:17:auth	[success=1 default=ignore]	pam_unix.so nullok
+/etc/pam.d/common-auth:23:auth	required			pam_permit.so
+/etc/pam.d/common-password:31:password	required			pam_permit.so
+/etc/pam.d/common-account:23:account	required			pam_permit.so
+/etc/pam.d/common-session-noninteractive:16:session	[default=1]			pam_permit.so
+/etc/pam.d/common-session-noninteractive:22:session	required			pam_permit.so
+/etc/pam.d/common-session:15:session	[default=1]			pam_permit.so
+/etc/pam.d/common-session:21:session	required			pam_permit.so
+
+===== PAM MODULES REFERENCED =====
+     14 pam_env.so
+      8 pam_permit.so
+      7 pam_limits.so
+      6 pam_unix.so
+      6 pam_deny.so
+      5 pam_selinux.so
+      5 pam_rootok.so
+      5 pam_keyinit.so
+      4 pam_motd.so
+      3 pam_wheel.so
+      3 pam_mail.so
+      3 pam_loginuid.so
+      2 pam_umask.so
+      2 pam_time.so
+      2 pam_systemd.so
+      2 pam_nologin.so
+      2 pam_access.so
+      1 pam_shells.so
+      1 pam_lastlog.so
+      1 pam_issue.so
+      1 pam_group.so
+      1 pam_faildelay.so
+      1 pam_cap.so
+
+===== WORLD-WRITABLE PAM FILES =====
+
+===== PAM .so ON DISK (recent mtime first) =====
+2026-07-29  /usr/lib/x86_64-linux-gnu/security/pam_systemd.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_xauth.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_wheel.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_warn.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_usertype.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_userdb.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_unix.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_umask.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_tty_audit.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_timestamp.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_time.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_succeed_if.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_stress.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_shells.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_setquota.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_sepermit.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_selinux.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_securetty.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_rootok.so
+2026-07-16  /usr/lib/x86_64-linux-gnu/security/pam_rhosts.so
