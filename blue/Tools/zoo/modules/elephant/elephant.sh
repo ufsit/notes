@@ -1,13 +1,10 @@
 #!/bin/bash
 # Elephant: generation and management of user passwords across hosts.
-HERE="$(dirname "$0")"
-DEPS="$HERE/../../Dependencies"
+# Sources meow's driver library for shared helpers ($DEPS, genPasswd, host list).
+HERE="$(cd "$(dirname "$0")" && pwd)"
+. "$HERE/../meow/meow.sh"
 LOG="$HERE/passwd_roll_log"
 mkdir -p "$LOG"
-
-genPasswd() {
-        grep -E '^[a-z]{3,}$' "$DEPS/words" | shuf -n 3 | paste -sd '0' -
-}
 
 initAdmin() {
         printf "If mistaken, Ctrl+c to exit\n"

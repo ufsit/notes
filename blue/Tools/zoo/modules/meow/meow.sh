@@ -1,166 +1,191 @@
 #!/bin/bash
-# v10: Remodeled logging system, added dependencies, deprecated script/cmd logs
-DEPS="$(dirname "$0")/../../Dependencies"
+# meow v11: connector/comm-driver LIBRARY + launcher.
+#   - When sourced by a module script, exposes the meow_* driver functions.
+#   - When executed directly, presents the launcher menu that runs each module.
+# Every module script sources this file and pushes its payload/commands through
+# the meow_* functions, so the SSH/scp transport lives in exactly one place.
 
-runScript() {
-        printf "Script name: "
-        read -r script
-        printf "\n"
-        while read -r adminUser ip adminPass; do
-                printf -- "[----- MEOW: %s -----]\n" "$ip"
-                "$DEPS/sshpass" -p "$adminPass" scp -o StrictHostKeyChecking=no "$script" "${adminUser}@${ip}:"
-                "$DEPS/sshpass" -p "$adminPass" ssh -T -n -o StrictHostKeyChecking=no "${adminUser}@${ip}" "sudo sh $script"
-        done < ../elephant/passwd_roll_log/adminUser.txt
+# Anchor to THIS file's location (works whether sourced or executed).
+MEOW_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEPS="$MEOW_DIR/../../Dependencies"
+HOSTS="$MEOW_DIR/../elephant/passwd_roll_log/adminUser.txt"
+SSH_OPTS="-o StrictHostKeyChecking=no"
+
+# ============================================================================
+# Driver library  (sourced by module scripts)
+# ============================================================================
+
+# Path to the host list (USER IP PASSWORD), owned by elephant.
+meow_hosts() { printf '%s\n' "$HOSTS"; }
+
+# Generate a passphrase: 3 dictionary words, "0"-separated.
+genPasswd() { grep -E '^[a-z]{3,}$' "$DEPS/words" | shuf -n 3 | paste -sd '0' -; }
+
+# meow_require_hosts: fail loudly if no host list exists yet.
+meow_require_hosts() {
+        if [ ! -s "$HOSTS" ]; then
+                printf "meow: no hosts in %s (run Password Roll / elephant initAdmin first)\n" "$HOSTS" >&2
+                return 1
+        fi
 }
 
-runCmd() {
-        printf "Command: "
-        read -r cmd
-        printf "Command:\n%s\n\n" "$cmd"
+# meow_run "<remote-cmd>": run a command on every host, stream output.
+meow_run() {
+        meow_require_hosts || return 1
+        _cmd="$1"
         while read -r adminUser ip adminPass; do
+                [ -z "$ip" ] && continue
                 printf -- "----- MEOW: %s -----\n" "$ip"
-                "$DEPS/sshpass" -p "$adminPass" ssh -T -n -o StrictHostKeyChecking=no "${adminUser}@${ip}" "$cmd"
-        done < ../elephant/passwd_roll_log/adminUser.txt
+                "$DEPS/sshpass" -p "$adminPass" ssh -T -n $SSH_OPTS "${adminUser}@${ip}" "$_cmd"
+        done < "$HOSTS"
 }
 
-netEnum() {
-        log="../nematode/net_enum_log/net_enum_$(date +"%H-%M-%S").out"
-        touch "$log"
-        printf "\n"
+# meow_deploy <local_payload> "<remote-cmd>" [logfile]:
+#   scp the payload to each host, run <remote-cmd> there, tee output to logfile.
+meow_deploy() {
+        meow_require_hosts || return 1
+        _payload="$1"; _rcmd="$2"; _log="$3"
+        if [ -n "$_log" ]; then mkdir -p "$(dirname "$_log")"; : > "$_log"; fi
         while read -r adminUser ip adminPass; do
-                printf -- "[----- MEOW_NET_ENUM: %s -----]\n" "$ip" | tee -a "$log"
-                "$DEPS/sshpass" -p "$adminPass" scp -o StrictHostKeyChecking=no "../nematode/net_enum.sh" "${adminUser}@${ip}:"
-                "$DEPS/sshpass" -p "$adminPass" ssh -T -n -o StrictHostKeyChecking=no "${adminUser}@${ip}" "chmod +x net_enum.sh; ./net_enum.sh 2>&1" >> "$log"
-        done < ../elephant/passwd_roll_log/adminUser.txt
-        printf "%s\n\n" "$log"
-}
-
-deployElastic() {
-        log="../elk/linux_agent_log/linux_agent_log_$(date +"%H-%M-%S").out"
-        touch "$log"
-        printf "\n"
-        printf "Elastic Server ip: "
-        read -r elastic_ip
-        printf "Kibana Server ip: "
-        read -r kibana_ip
-        printf "CA Fingerprint: "
-        read -r finger
-        printf "Elastic Password: "
-        read -r elastic_pass
-        while read -r adminUser ip adminPass <&3; do
-                printf -- "[----- MEOW_ELASTIC_AGENT: %s; TIME: %s -----]\n" "$ip" "$(date +"%H-%M-%S")" | tee -a "$log"
-                "$DEPS/sshpass" -p "$adminPass" scp -o StrictHostKeyChecking=no "../elk/linux_agent.sh" "../elk/alpine-beats.tar.gz" "../elk/rules.conf" "../elk/archive_install.sh" "${adminUser}@${ip}:"
-                "$DEPS/sshpass" -p "$adminPass" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60000 "${adminUser}@${ip}" "sudo sh ~/linux_agent.sh" << EOF 2>>"$log"
-$elastic_ip
-$kibana_ip
-$finger
-$elastic_pass
-EOF
-
-        done 3< ../elephant/passwd_roll_log/adminUser.txt
-        printf "%s\n\n" "$log"
-}
-
-getBaks() {
-        log="../chipmunk/baks/baks_log/cmd_$(date +"%H-%M-%S").out"
-        touch "$log"
-        while read -r adminUser ip adminPass; do
-                printf -- "----- MEOW: %s -----" "$ip" | tee -a "$log"
-                latest_bak=$("$DEPS/sshpass" -p "$adminPass" ssh -T -n -o StrictHostKeyChecking=no "${adminUser}@${ip}" 'ls -t ~/baks/ 2>/dev/null | head -n 1')
-                if [ -z "$latest_bak" ]; then
-                        printf " NOT FOUND\n" | tee -a "$log"
-                        continue
+                [ -z "$ip" ] && continue
+                if [ -n "$_log" ]; then
+                        printf -- "[----- MEOW: %s -----]\n" "$ip" | tee -a "$_log"
                 else
-                        printf " FOUND\n" | tee -a "$log"
+                        printf -- "[----- MEOW: %s -----]\n" "$ip"
                 fi
-                mkdir -p ../chipmunk/baks/"$ip"
-                "$DEPS/sshpass" -p "$adminPass" scp -o StrictHostKeyChecking=no "${adminUser}@${ip}:~/baks/${latest_bak}" "../chipmunk/baks/${ip}/${latest_bak}_$(date +"%H-%M-%S")"
-        done < ../elephant/passwd_roll_log/adminUser.txt
-        printf "%s\n\n" "$log"
+                [ -n "$_payload" ] && "$DEPS/sshpass" -p "$adminPass" scp $SSH_OPTS "$_payload" "${adminUser}@${ip}:" >/dev/null 2>&1
+                if [ -n "$_log" ]; then
+                        "$DEPS/sshpass" -p "$adminPass" ssh -T -n $SSH_OPTS "${adminUser}@${ip}" "$_rcmd" 2>&1 | tee -a "$_log"
+                else
+                        "$DEPS/sshpass" -p "$adminPass" ssh -T -n $SSH_OPTS "${adminUser}@${ip}" "$_rcmd"
+                fi
+        done < "$HOSTS"
 }
 
-genNmapIps() {
+# meow_push <file>...: copy local files to each host's home.
+meow_push() {
+        meow_require_hosts || return 1
+        while read -r adminUser ip adminPass; do
+                [ -z "$ip" ] && continue
+                printf -- "----- MEOW push -> %s -----\n" "$ip"
+                "$DEPS/sshpass" -p "$adminPass" scp $SSH_OPTS "$@" "${adminUser}@${ip}:"
+        done < "$HOSTS"
+}
+
+# meow_fetch "<remote-path>" <local-dir>: pull files from each host into <local-dir>/<ip>/.
+meow_fetch() {
+        meow_require_hosts || return 1
+        _remote="$1"; _dest="$2"
+        while read -r adminUser ip adminPass; do
+                [ -z "$ip" ] && continue
+                mkdir -p "$_dest/$ip"
+                printf -- "----- MEOW fetch <- %s -----\n" "$ip"
+                "$DEPS/sshpass" -p "$adminPass" scp $SSH_OPTS "${adminUser}@${ip}:$_remote" "$_dest/$ip/" 2>/dev/null
+        done < "$HOSTS"
+}
+
+# ============================================================================
+# Launcher  (only when executed directly, not when sourced)
+# ============================================================================
+
+mod() { "$MEOW_DIR/../$1"; }   # run a module orchestrator by relative path
+
+meow_cmd() {   # [a] ad-hoc command
+        printf "Command: "; read -r cmd; printf "\n"
+        meow_run "$cmd"
+}
+
+meow_script() {   # [b] ad-hoc script
+        printf "Local script path: "; read -r script
+        printf "Remote command [sh ~/%s]: " "$(basename "$script")"; read -r rcmd
+        [ -z "$rcmd" ] && rcmd="sh ~/$(basename "$script")"
+        meow_deploy "$script" "$rcmd"
+}
+
+init() {
+        mkdir -p \
+                "$MEOW_DIR/../elephant/passwd_roll_log" \
+                "$MEOW_DIR/../nematode/net_enum_log" \
+                "$MEOW_DIR/../elk/linux_agent_log" \
+                "$MEOW_DIR/../chipmunk/baks/baks_log" \
+                "$MEOW_DIR/../hawk/nmap_log" \
+                "$MEOW_DIR/../woof/woof_log" \
+                "$MEOW_DIR/../meerkat/meerkat_log" \
+                "$MEOW_DIR/../lynx/lynx_log" \
+                "$MEOW_DIR/../woodpecker/woodpecker_log" \
+                "$MEOW_DIR/../armadillo/armadillo_log" \
+                "$MEOW_DIR/../beaver/beaver_log" \
+                "$MEOW_DIR/../phoenix/phoenix_log" \
+                "$MEOW_DIR/../suricata/suricata_log" \
+                "$MEOW_DIR/../chomp/chomp_log"
+        chmod +x "$DEPS/sshpass" "$DEPS/nmap" "$MEOW_DIR"/../*/*.sh 2>/dev/null
+}
+
+clean_up() {
+        rm -rf \
+                "$MEOW_DIR"/../elephant/passwd_roll_log/* \
+                "$MEOW_DIR"/../nematode/net_enum_log/* \
+                "$MEOW_DIR"/../elk/linux_agent_log/* \
+                "$MEOW_DIR"/../chipmunk/baks/baks_log/* \
+                "$MEOW_DIR"/../hawk/nmap_log/* \
+                "$MEOW_DIR"/../woof/woof_log/* \
+                "$MEOW_DIR"/../meerkat/meerkat_log/* \
+                "$MEOW_DIR"/../lynx/lynx_log/* \
+                "$MEOW_DIR"/../woodpecker/woodpecker_log/* \
+                "$MEOW_DIR"/../armadillo/armadillo_log/* \
+                "$MEOW_DIR"/../beaver/beaver_log/* \
+                "$MEOW_DIR"/../phoenix/phoenix_log/* \
+                "$MEOW_DIR"/../suricata/suricata_log/* \
+                "$MEOW_DIR"/../chomp/chomp_log/* 2>/dev/null
+}
+
+run_menu() {
         while true; do
-            printf "\nIgnore Admin Init? [y/n]:\t"
-            read -r isFirstRoll
-            case "$isFirstRoll" in
-                y) return ;;
-                n) break ;;
-                *) ;;
-            esac
-        done
-
-        while :; do
-                rm -f nmap_ips.txt
-                while :; do
-                        printf "IP Address (x to stop):\t\t"
-                        read -r ip
-                        case "$ip" in
-                                x) break ;;
-                                *) echo "$ip" >> nmap_ips.txt ;;
-                        esac
-                done
-
-                printf "\n----- nmap_ips.txt Content -----\n"
-                cat nmap_ips.txt
-                printf '\nConfirm? [y/N]: '
-                read -r isInitNmapIpsGood
-                case "$isInitNmapIpsGood" in
-                        y) break ;;
-                        *) ;;
+                init
+                printf "\n~~~~~ Welcome to meow! ~~~~~~\n"
+                printf "[1]  Password Roll        (elephant)\n"
+                printf "[2]  Network Enum         (nematode)\n"
+                printf "[3]  Deploy Elastic Agent (elk)\n"
+                printf "[4]  Deploy Suricata      (suricata)\n"
+                printf "[5]  Get Backups          (chipmunk)\n"
+                printf "[6]  Nmap Scan            (hawk)\n"
+                printf "[7]  Service Health       (meerkat)\n"
+                printf "[8]  PAM Audit            (lynx)\n"
+                printf "[9]  Default Cred Check   (woodpecker)\n"
+                printf "[10] Patch Misconfigs     (woof)\n"
+                printf "[11] Harden System        (armadillo)\n"
+                printf "[12] Restore Files        (beaver)\n"
+                printf "[13] Firewall Tasks       (phoenix)\n"
+                printf "[14] Deploy WAF           (turtle)\n"
+                printf "[15] Deploy EDR           (chomp)\n"
+                printf "\n[a] Command   [b] Script   [x] Exit\n"
+                printf "Option: "
+                read -r option
+                case "$option" in
+                        1)  mod elephant/elephant.sh ;;
+                        2)  mod nematode/nematode.sh ;;
+                        3)  mod elk/elk.sh ;;
+                        4)  mod suricata/suricata.sh ;;
+                        5)  mod chipmunk/chipmunk.sh ;;
+                        6)  mod hawk/hawk.sh ;;
+                        7)  mod meerkat/meerkat.sh ;;
+                        8)  mod lynx/lynx.sh ;;
+                        9)  mod woodpecker/woodpecker.sh ;;
+                        10) mod woof/woof.sh ;;
+                        11) mod armadillo/armadillo.sh ;;
+                        12) mod beaver/beaver.sh ;;
+                        13) mod phoenix/phoenix.sh ;;
+                        14) mod turtle/turtle.sh ;;
+                        15) mod chomp/chomp.sh ;;
+                        a)  meow_cmd ;;
+                        b)  meow_script ;;
+                        x)  clean_up; break ;;
+                        *)  ;;
                 esac
         done
 }
 
-nmap() {
-        log="../hawk/nmap_log/nmap_$(date +"%H-%M-%S").out"
-        touch "$log"
-
-        genNmapIps
-
-        while read -r ip; do
-                mkdir -p ../hawk/nmap_log/"$ip"
-                printf -- "----- MEOW: %s -----\n" "$ip" | tee -a "$log"
-                sudo "$DEPS/nmap" --datadir "$DEPS/nmap-data" -Pn -sC -sV -O -p- -oA ../hawk/nmap_log/"$ip"/"$ip" "$ip" >> "$log"
-        done < nmap_ips.txt
-        printf "%s\n\n" "$log"
-}
-
-init() {
-        mkdir -p ../elephant/passwd_roll_log ../elk/linux_agent_log ../chipmunk/baks/baks_log ../hawk/nmap_log ../woof/woof_log ../nematode/net_enum_log
-        touch nmap_ips.txt
-        chmod +x "$DEPS/sshpass" "$DEPS/nmap" "../nematode/net_enum.sh" "../elk/linux_agent.sh" "../elk/archive_install.sh" 2>/dev/null
-}
-
-clean_up() {
-        rm -rf ../elephant/passwd_roll_log/* ../elk/linux_agent_log/* ../chipmunk/baks/baks_log/* ../hawk/nmap_log/* ../woof/woof_log/* ../nematode/net_enum_log/*
-}
-
-while true; do
-    init
-    printf "~~~~~ Welcome to meow! ~~~~~~\n"
-    printf "[1] Password Roll\n"
-    printf "[2] Network Enum\n"
-    printf "[3] Deploy Elastic Agent\n"
-    printf "[4] Deploy Suricata\n"
-    printf "[5] Get Backups\n"
-    printf "[6] Nmap Scan\n"
-    printf "\n"
-    printf "[a] Command\n"
-    printf "[b] Script\n"
-    printf "[x] Exit\n"
-    printf "Option: "
-    read -r option
-    case "$option" in
-        1) ../elephant/elephant.sh ;;
-        2) ../nematode/net_enum.sh ;;
-        3) deployElastic ;;
-        4) printf "DEVELOPING ...\n" ;;
-        5) getBaks ;;
-        6) nmap ;;
-        a) runCmd ;;
-        b) runScript ;;
-        x) clean_up; break ;;
-        *) ;;
-    esac
-done
+# Run the menu only when executed directly (sourcing just loads the library).
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+        run_menu
+fi
