@@ -1,0 +1,38 @@
+*_log/
+ 
+# --- elephant -------------------
+adminUser.txt
+clear.txt
+*Hashes.txt
+ 
+# --- chipmunk ------
+modules/chipmunk/baks/
+ 
+# --- beaver -----------------------
+modules/beaver/good/
+ 
+# --- hawk -------------------------------------
+modules/meow/nmap_ips.txt
+ 
+# --- funmap -----
+/fun/
+/index.html
+/Rips.txt
+/cracked.txt
+ 
+# --- generated / captured host + credential lists -------
+pass.txt
+users.txt
+ips.txt
+nmap_ips.txt
+hosts.txt
+unencrypt_password.txt
+ 
+# --- generic secrets --------------------------------
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+*.kdbx
+ 
+!**/.gitkeep
