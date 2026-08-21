@@ -1,4 +1,0 @@
-# Nmap 7.95 scan initiated Wed Aug 19 15:05:07 2026 as: /sessions/beautiful-focused-bell/mnt/zoo/modules/meow/../../Dependencies/nmap --datadir /sessions/beautiful-focused-bell/mnt/zoo/modules/meow/../../Dependencies/nmap-data -Pn -sT -sV -p 2200-2300 -oA /sessions/beautiful-focused-bell/mnt/zoo/modules/hawk/nmap_log/127.0.0.1/127.0.0.1 127.0.0.1
-Host: 127.0.0.1 (localhost)	Status: Up
-Host: 127.0.0.1 (localhost)	Ports: 2222/open/tcp//ssh//OpenSSH 8.9p1 Ubuntu 3ubuntu0.16 (Ubuntu Linux; protocol 2.0)/	Ignored State: closed (100)
-# Nmap done at Wed Aug 19 15:05:07 2026 -- 1 IP address (1 host up) scanned in 0.58 seconds
