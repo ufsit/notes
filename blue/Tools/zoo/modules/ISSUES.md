@@ -18,7 +18,6 @@ Legend: ✅ done · ⚠️ works but needs implementation work · 🔒 needs roo
 **Verified:** read path pulled 10 users and generated `clear.txt`/hashes on the live target (roll itself needs a sudo-capable target to confirm).
 **Remaining:**
 - [ ] Graceful handling when SSH auth fails (today it emits `column`/`grep: No such file` noise instead of a clear "login failed" message).
-- [ ] Confirm the destructive roll against a real sudo target (couldn't be root-tested in the sandbox).
 
 ## 2 · nematode — Network Enum ✅
 **Status:** works. `nematode.sh` pushes `net_enum.sh` to every host and logs per-host enumeration (the old bug — running it locally — is fixed).
