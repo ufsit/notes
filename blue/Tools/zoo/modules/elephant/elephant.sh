@@ -3,29 +3,61 @@
 # Sources meow's driver library for shared helpers ($DEPS, genPasswd, host list).
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/../meow/meow.sh"
+. "$HERE/../hawk/hawk.sh"
 LOG="$HERE/passwd_roll_log"
 mkdir -p "$LOG"
 
 initAdmin() {
-        printf "If mistaken, Ctrl+c to exit\n"
-        printf "Admin:\t\t\t\t"
+        printf "If mistaken, Ctrl+c to exit
+"
+        printf "Admin:				"
         read -r adminUser
-        printf "Password:\t\t\t"
+        printf "Password:			"
         read -r adminPass
         while :; do
-                rm -f "$LOG/adminUser.txt"
+                : > "$LOG/adminUser.txt"
+                ips=""
                 while :; do
-                        printf "IP Address (x to stop):\t\t"
+                        printf "IP Address (x to stop):		"
                         read -r ip
                         case "$ip" in
                                 x) break ;;
-                                *) printf '%s %s %s\n' "$adminUser" "$ip" "$adminPass" >> "$LOG/adminUser.txt" ;;
+                                *) ips="$ips $ip" ;;
                         esac
                 done
 
-                printf "\n----- adminUser.txt Contents -----\n"
-                cat "$LOG/adminUser.txt"
-                printf '\nConfirm? [y/N]: '
+                printf "
+Fingerprinting OS with hawk nmap...
+"
+                hawk_osmap $ips > "$LOG/osmap.tmp"
+                while read -r ip os <&3; do
+                        dom='-'
+                        case "$os" in
+                                windows)
+                                        printf "  %-15s windows -- domain (blank = local admin): " "$ip"
+                                        read -r dom; [ -z "$dom" ] && dom='-' ;;
+                                unknown)
+                                        printf "  %-15s unknown -- [l]inux / [w]indows / [s]kip: " "$ip"
+                                        read -r ans
+                                        case "$ans" in
+                                                w) os=windows
+                                                        printf "    domain (blank = local admin): "
+                                                        read -r dom; [ -z "$dom" ] && dom='-' ;;
+                                                s) continue ;;
+                                                *) os=linux ;;
+                                        esac ;;
+                        esac
+                        printf '%s %s %s %s %s
+' "$adminUser" "$ip" "$adminPass" "$os" "$dom" >> "$LOG/adminUser.txt"
+                done 3< "$LOG/osmap.tmp"
+                rm -f "$LOG/osmap.tmp"
+
+                printf "
+----- adminUser.txt (USER IP PASSWORD OS DOMAIN) -----
+"
+                column -t "$LOG/adminUser.txt"
+                printf '
+Confirm? [y/N]: '
                 read -r isInitAdminGood
                 case "$isInitAdminGood" in
                         y) break ;;
@@ -68,21 +100,16 @@ rollPasswd() {
 #       REQUIRES valid [adminUser.txt]
 
 
-# ----- initAdmin() -----
-        while true; do
-            printf "\nIgnore Admin Init? [y/n]:\t"
-            read -r isFirstRoll
-            case "$isFirstRoll" in
-                    y) break ;;
-                    n) initAdmin
-                       break ;;
-                    *) ;;
-            esac
-        done
+# Requires a host list built by the Setup Hosts step (initAdmin).
+        if [ ! -s "$LOG/adminUser.txt" ]; then
+                printf "No host list yet -- run 'Setup Hosts' first.\n" >&2
+                return 1
+        fi
 
 # ----- genUserList() -----
         rm -f "$LOG/users.txt"
-        while read -r adminUser ip adminPass; do
+        while read -r adminUser ip adminPass os domain; do
+                [ "$os" = windows ] && continue
                 printf "Grabbing users from %-15s with %s:%s\n" "$ip" "$adminUser" "$adminPass"
                 "$DEPS/sshpass" -p "$adminPass" ssh -n -o StrictHostKeyChecking=no "${adminUser}@${ip}" "grep -Ev '^#|nologin|false|sync|shutdown|halt|bta|black' /etc/passwd | awk -F: '{print \$1\" $ip\"}'" >> "$LOG/users.txt"
         done < "$LOG/adminUser.txt"
@@ -162,6 +189,41 @@ rollPasswd() {
         printf "\n----- New Admin Passwords -----\n"
         column -t "$LOG/adminUser.txt"
         printf "\n"
+
+        rollWindows
 }
 
-rollPasswd
+rollWindows() {
+        wins="$(awk '$4=="windows"{print}' "$LOG/adminUser.txt")"
+        [ -z "$wins" ] && return 0
+        printf -- "\n===== Windows Roll =====\n"
+        : > "$LOG/clear_win.txt"
+        printf '%s\n' "$wins" | while read -r user ip pass os domain; do
+                [ -z "$ip" ] && continue
+                printf -- "----- %s (%s) -----\n" "$ip" "$domain"
+                case "$domain" in ''|-|.) flag="-L" ;; *) flag="-D" ;; esac
+                meow_win_put "$user" "$ip" "$pass" "$domain" "$HERE/roll_passwords.ps1" "\\Windows\\Temp\\roll_passwords.ps1"
+                meow_win_put "$user" "$ip" "$pass" "$domain" "$HERE/words.txt"          "\\Windows\\Temp\\words.txt"
+                out="$(meow_win_run "$user" "$ip" "$pass" "$domain" "powershell -ExecutionPolicy Bypass -Command \"Set-Location C:\\Windows\\Temp; .\\roll_passwords.ps1 $flag; Remove-Item -Force -ErrorAction SilentlyContinue roll_passwords.ps1,words.txt\"" 2>&1)"
+                printf '%s\n' "$out" | grep -v 'ZOOCRED:'
+                creds="$(printf '%s\n' "$out" | tr -d '\r' | sed -n 's/.*ZOOCRED://p' | while IFS= read -r b; do [ -n "$b" ] && { printf '%s' "$b" | base64 -d 2>/dev/null; printf '\n'; }; done)"
+                if [ -n "$creds" ]; then
+                        printf '%s\n' "$creds" >> "$LOG/clear_win.txt"
+                        printf "  rolled %s account(s)\n" "$(printf '%s\n' "$creds" | grep -c .)"
+                        newpass="$(printf '%s\n' "$creds" | awk -F: -v u="$user" '{ n=$1; sub(/.*\\/,"",n); if (tolower(n)==tolower(u)) { print $2; exit } }')"
+                        if [ -n "$newpass" ]; then
+                                awk -v ip="$ip" -v u="$user" -v np="$newpass" '$1==u && $2==ip {$3=np} {print}' "$LOG/adminUser.txt" > "$LOG/adminUser.tmp" && mv "$LOG/adminUser.tmp" "$LOG/adminUser.txt"
+                                printf "  updated stored password for %s@%s\n" "$user" "$ip"
+                        fi
+                else
+                        printf "  no creds returned from %s\n" "$ip"
+                fi
+        done
+        chmod 600 "$LOG/clear_win.txt" 2>/dev/null
+        printf -- "\nWindows creds (plaintext) saved -> %s\n\n" "$LOG/clear_win.txt"
+}
+
+case "$1" in
+        init) initAdmin ;;
+        *)    rollPasswd ;;
+esac

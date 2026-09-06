@@ -6,7 +6,8 @@ meow_require_hosts || exit 1
 log="$HERE/woodpecker_log/woodpecker_$(date +%H-%M-%S).out"; mkdir -p "$(dirname "$log")"; : > "$log"
 # default credential list (user:pass) - extend freely
 CREDS="root:root root:toor root:password admin:admin admin:password user:user pi:raspberry ubuntu:ubuntu guest:guest test:test"
-while read -r adminUser ip adminPass; do
+while read -r adminUser ip adminPass os domain; do
+        [ "$os" = windows ] && { printf -- "  (skip %s: windows unsupported by this module)\n" "$ip"; continue; }
         [ -z "$ip" ] && continue
         printf -- "[----- WOODPECKER: %s -----]\n" "$ip" | tee -a "$log"
         for pair in $CREDS; do

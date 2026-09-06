@@ -6,7 +6,8 @@ log="$HERE/baks/baks_log/chipmunk_$(date +%H-%M-%S).out"; mkdir -p "$(dirname "$
 # 1) create a fresh backup on each target
 meow_deploy "$HERE/mkbak.sh" 'sh ~/mkbak.sh' "$log"
 # 2) pull the newest backup from each host into chipmunk/baks/<ip>/
-while read -r adminUser ip adminPass; do
+while read -r adminUser ip adminPass os domain; do
+        [ "$os" = windows ] && { printf -- "  (skip %s: windows unsupported by this module)\n" "$ip"; continue; }
         [ -z "$ip" ] && continue
         latest=$("$DEPS/sshpass" -p "$adminPass" ssh -T -n -o StrictHostKeyChecking=no "${adminUser}@${ip}" 'ls -t ~/baks/*.tar.gz 2>/dev/null | head -1')
         if [ -z "$latest" ]; then printf "%s: no backup found\n" "$ip" | tee -a "$log"; continue; fi
