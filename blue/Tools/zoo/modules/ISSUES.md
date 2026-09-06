@@ -1,8 +1,9 @@
 # Zoo module tracker — one issue per animal
 
 All 15 modules were live-verified against a loopback SSH target. `meow.sh` is a
-sourceable driver library (`meow_run` / `meow_deploy` / `meow_fetch` / `meow_push`
-/ `genPasswd`); every module has a `<module>.sh` that calls into it.
+sourceable, OS-aware driver library (`meow_run` / `meow_deploy` / `meow_fetch` /
+`meow_push` / `genPasswd`, plus `meow_win_*`): linux hosts go over ssh, windows
+hosts over netexec (`nxc`). Every module has a `<module>.sh` that calls into it.
 
 **nmap retest:** the static nmap 7.95 (self-contained binary + refreshed `nmap-data`)
 was re-tested end to end — hawk performed real `-sV` service detection and every
@@ -114,5 +115,6 @@ Legend: ✅ done · ⚠️ works but needs implementation work · 🔒 needs roo
 
 ## Cross-cutting
 - [ ] All `.sh` must stay LF (CRLF breaks them on Linux); consider a `.gitattributes` `*.sh text eol=lf`.
-- [ ] `meow.sh init()` now `chmod +x`'s all module scripts so a fresh clone is launchable.
+- [x] Interactive launcher split out of `meow.sh` into `launcher.sh` (repo root); `meow.sh` is now a pure sourceable library. `launcher.sh init()` `chmod +x`'s all module scripts so a fresh clone is launchable.
 - [ ] Static nmap (binary + `nmap-data`) is committed in `Dependencies/` for clone-and-go comp init.
+- [ ] Windows support: elephant tags host OS (hawk nmap) and rolls windows creds via `roll_passwords.ps1` over nxc; beaver/woodpecker/chipmunk skip windows for now.

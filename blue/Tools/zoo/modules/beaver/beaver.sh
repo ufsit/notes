@@ -6,7 +6,8 @@ GOOD="$HERE/good"; mkdir -p "$GOOD"
 log="$HERE/beaver_log/beaver_$(date +%H-%M-%S).out"; mkdir -p "$(dirname "$log")"; : > "$log"
 # Files to guard (override with BEAVER_WATCH="...").
 WATCH="${BEAVER_WATCH:-/etc/hosts /etc/os-release}"
-while read -r adminUser ip adminPass; do
+while read -r adminUser ip adminPass os domain; do
+        [ "$os" = windows ] && { printf -- "  (skip %s: windows unsupported by this module)\n" "$ip"; continue; }
         [ -z "$ip" ] && continue
         printf -- "[----- BEAVER: %s -----]\n" "$ip" | tee -a "$log"
         for f in $WATCH; do
