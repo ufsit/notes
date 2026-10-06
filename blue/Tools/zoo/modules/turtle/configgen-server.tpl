@@ -1,4 +1,4 @@
-${protocol}://:${externport} {
+:${externport} {
 		coraza_waf {
 				load_owasp_crs
 				directives `
