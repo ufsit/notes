@@ -70,7 +70,7 @@ echo "ᗜ‿ᗜ | Validating & Starting Caddy WAF. | ᗜ‿ᗜ"
 
 if ! command -v caddy &>/dev/null; then
     if [ -f "$HERE/caddy-linux" ]; then
-        chmod 700 "$HERE/caddy-linux"
+        chmod 100 "$HERE/caddy-linux"
         export PATH="$HERE:$PATH"
         ln -sf "$HERE/caddy-linux" "$HERE/caddy" 
     else
