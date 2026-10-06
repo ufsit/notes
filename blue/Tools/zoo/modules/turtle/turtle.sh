@@ -70,9 +70,9 @@ echo "ᗜ‿ᗜ | Validating & Starting Caddy WAF. | ᗜ‿ᗜ"
 
 if ! command -v caddy &>/dev/null; then
     if [ -f "$HERE/caddy-linux" ]; then
-        chmod +x "$HERE/caddy-linux"
+        chmod 700 "$HERE/caddy-linux"
         export PATH="$HERE:$PATH"
-        ln -sf "$HERE/caddy-linux" "$HERE/caddy"
+        ln -sf "$HERE/caddy-linux" "$HERE/caddy" 
     else
         echo "ᗜ‿ᗜ | Error: caddy binary not found. | ᗜ‿ᗜ"
         exit 1
@@ -80,7 +80,7 @@ if ! command -v caddy &>/dev/null; then
 fi
 caddy validate --config "$HERE/Caddyfile"
 caddy start --config "$HERE/Caddyfile"
-# Maybe find a way to grab external port from config in caddyfile using grep... Will do it later - Doiran
+# made it so that it automatically reads what port is configured within the Caddyfile for testing.
 # read -p "Enter external port configured in Caddyfile: " EXT_PORT
 mapfile -t EXT_PORTS < <(grep -oP '^:\K\d+(?=\s*\{)' "$HERE/Caddyfile")
 for EXT_PORT in "${EXT_PORTS[@]}"; do
