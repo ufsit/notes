@@ -18,18 +18,18 @@ Write-Host "ᗜ‿ᗜ Checking listening web ports ᗜ‿ᗜ" -ForegroundColor C
 $listeners = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue |
     Where-Object { $_.LocalPort -in 80, 443, 8080 } |
     Select-Object LocalAddress, LocalPort, OwningProcess
-$report = if ($listeners)  { ($listeners | Format-Table | Out-String) } else { "(none on 80/443/8080)'n" }
+$report = if ($listeners)  { ($listeners | Format-Table | Out-String) } else { "(none on 80/443/8080)`n" }
 Write-Host $report
 
 $logdir = Join-Path $Here 'turtle_log'
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
-$log = Join=Path $logdir ("turtle_{0}.out" -f (Get-Date -Format 'HH-mm-ss'))
-Get-Content -Path $log -Value $report
+$log = Join-Path $logdir ("turtle_{0}.out" -f (Get-Date -Format 'HH-mm-ss'))
+Set-Content -Path $log -Value $report
 Write-Host "ᗜ‿ᗜ Saved: $log ᗜ‿ᗜ"
 
 $crs = Join-Path $Here 'coreruleset'
 if (-not (Test-Path $crs)) {
-    git clone --depth 1 https://github.com/coreruleset.git $crs
+    git clone --depth 1 https://github.com/coreruleset/coreruleset.git $crs
     Assert-Ok "git clone"
 }
 
@@ -45,11 +45,18 @@ if (-not (Test-Path $corza_conf)) {
         -OutFile $corza_conf
 }
 
+
+$caddyfile = Join-Path $Here 'Caddyfile'
+if (Test-Path $caddyfile) {
+    Move-Item $caddyfile "$caddyfile.bak" -Force
+    Write-Host "ᗜ‿ᗜ Old Caddyfile moved to Caddyfile.bak ᗜ‿ᗜ"
+}
+
 Write-Host "ᗜ‿ᗜ Generating Caddy config ᗜ‿ᗜ"
 if (Get-Command python -ErrorAction SilentlyContinue) {
     & python (Join-Path $Here 'configgen.py')
 }
-elseif (Get-Command py - ErrorAction SilentlyContinue) {
+elseif (Get-Command py -ErrorAction SilentlyContinue) {
     & py -3 (Join-Path $Here 'configgen.py')
 }
 else {
@@ -58,9 +65,11 @@ else {
 
 Assert-Ok "configgen.py"
 
-$caddyfile = Get-Command caddy -ErrorAction SilentlyContinue
+
+
 if (-not (Test-Path $caddyfile)) { throw "ᗜ‿ᗜ Caddy Generation failed. No Caddyfile. ᗜ‿ᗜ"}
 
+$found = Get-Command caddy -ErrorAction SilentlyContinue
 if ($found) {
     $caddy_exe = $found.Source
 }
@@ -97,4 +106,4 @@ foreach ($p in $ports) {
 }
  
 Write-Host "`n ᗜ‿ᗜ Caddy-WAF Deployment Finished ᗜ‿ᗜ"
-Write-Host "ᗜ‿ᗜ Stop it later with: $caddyExe stop ᗜ‿ᗜ"
+Write-Host "ᗜ‿ᗜ Stop it later with: $caddy_exe stop ᗜ‿ᗜ"
